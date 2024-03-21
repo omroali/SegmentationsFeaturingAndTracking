@@ -53,7 +53,9 @@ class ImageSegmentation:
 
 
 def main():
-    image = ImageSegmentation(f"{dir_path}/../data/ball_frames/frame-54.png")
+    path = "/home/kyro/Code/SegmentationsFeaturingAndTracking/data/ball_frames/frame-54.png"
+    print(path)
+    image = ImageSegmentation(path)
     cv2.imshow("original_image", image.image)
     # cv2.imshow("intensity", image.intensity)
     # cv2.imshow("adaptive_gaus_threshold", image.adaptive_gaussian_threshold)

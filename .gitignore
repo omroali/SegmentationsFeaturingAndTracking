@@ -1,3 +1,5 @@
 __MACOSX
 ball_frames
 venv
+*.egg-info
+build
