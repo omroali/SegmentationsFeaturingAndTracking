@@ -1,12 +1,5 @@
 import cv2
 
-# import numpy as np
-import os
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-
-# TODO: natsort for loading all the files
-
 
 class ImageSegmentation:
     def __init__(self, image_path: str):
@@ -50,19 +43,3 @@ class ImageSegmentation:
         self.closing = cv2.morphologyEx(
             self.dilation, cv2.MORPH_OPEN, (Kc, Kc), iterations=9
         )
-
-
-def main():
-    path = "/home/kyro/Code/SegmentationsFeaturingAndTracking/data/ball_frames/frame-54.png"
-    print(path)
-    image = ImageSegmentation(path)
-    cv2.imshow("original_image", image.image)
-    # cv2.imshow("intensity", image.intensity)
-    # cv2.imshow("adaptive_gaus_threshold", image.adaptive_gaussian_threshold)
-    cv2.imshow("dilation", image.dilation)
-    cv2.imshow("closing", image.closing)
-    cv2.waitKey(0)
-
-
-if __name__ == "__main__":
-    main()

@@ -3,3 +3,4 @@ ball_frames
 venv
 *.egg-info
 build
+*__pychache__
