@@ -3,6 +3,7 @@ import glob
 from natsort import natsorted
 import numpy as np
 import matplotlib.pyplot as plt
+import cv2
 
 
 def get_images_in_path(folder_path):
@@ -34,6 +35,7 @@ def show_image_list(
     num_cols=2,
     figsize=(20, 10),
     title_fontsize=12,
+    save_path=None,
 ):
     """
     Shows a grid of images, where each image is a Numpy array. The images can be either
@@ -107,4 +109,55 @@ def show_image_list(
         list_axes[i].set_visible(False)
 
     fig.tight_layout()
-    _ = plt.show()
+    # _ = plt.show()
+
+    if save_path is not None:
+        fig.savefig(save_path)
+
+    plt.close(fig)
+
+
+def fillhole(input_image):
+    """
+    input gray binary image  get the filled image by floodfill method
+    Note: only holes surrounded in the connected regions will be filled.
+    :param input_image:
+    :return:
+    """
+    im_flood_fill = input_image.copy()
+    h, w = input_image.shape[:2]
+    mask = np.zeros((h + 2, w + 2), np.uint8)
+    im_flood_fill = im_flood_fill.astype("uint8")
+    cv2.floodFill(im_flood_fill, mask, (0, 0), 255)
+    im_flood_fill_inv = cv2.bitwise_not(im_flood_fill)
+    img_out = input_image | im_flood_fill_inv
+    return img_out
+
+
+def fill(img):
+    des = cv2.bitwise_not(img.copy())
+    contour, hier = cv2.findContours(des, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+    for cnt in contour:
+        cv2.drawContours(des, [cnt], 0, 255, -1)
+    return cv2.bitwise_not(des)
+
+
+def fillCirc(img):
+    des = cv2.bitwise_not(img.copy())
+    contour, hier = cv2.findContours(des, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+    contour_list = []
+    for cnt in contour:
+        approx = cv2.approxPolyDP(cnt, 0.01 * cv2.arcLength(cnt, True), True)
+        area = cv2.contourArea(cnt)
+        # if (len(approx) > 8) & (area > 30):
+        contour_list.append(cnt)
+    cv2.drawContours(des, contour_list, 0, 255, -1)
+    return cv2.bitwise_not(des)
+
+
+def fill2(img):
+    des = cv2.bitwise_not(img.copy())
+    contour, hier = cv2.findContours(des, cv2.RETR_FLOODFILL, cv2.CHAIN_APPROX_SIMPLE)
+    for cnt in contour:
+        cv2.drawContours(des, [cnt], 0, 255, -1)
+    return cv2.bitwise_not(des)
