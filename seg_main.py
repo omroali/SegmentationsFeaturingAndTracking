@@ -48,7 +48,7 @@ def main():
     time = datetime.now().isoformat("_", timespec="seconds")
     os.mkdir(f"process_data/{time}")
 
-    with mp.Pool(processes=10) as pool:
+    with mp.Pool() as pool:
         inputs = [[image, time] for image in images]
         list(
             tqdm(
