@@ -1,4 +1,5 @@
 import cv2
+from cv2.typing import MatLike
 import numpy as np
 from segmentation.utils import fillhole, fill, fillCirc
 
@@ -6,42 +7,26 @@ from segmentation.utils import fillhole, fill, fillCirc
 class ImageSegmentation:
     def __init__(self, image_path: str):
         self.image = cv2.imread(image_path)
-
         self.processing_data = []
-        # self.data = [
-        #     "Kblur": (3, 3),
-        #     "blockSize": 15,
-        #     "C": 3,
-        #     "KDil": (5, 5),
-        #     "iDil": 7,
-        #     "KClos": (5, 5),
-        #     "iClos": 10,
-        #     "KOpen": (5, 5),
-        #     "iOpen": 7,
-        # ]
+        self.processing_images = []
 
-        # self.preprocessing()
+    def log_image_processing(self, image, operation: str):
+        """log the image processing"""
+        self.processing_data.append(operation)
+        self.processing_images.append(image)
 
     def blur(self, image, ksize=(3, 3), iterations=1):
         """apply gaussian blur to the image"""
-        self.processing_data.append(
-            [f"operation,gblur,kernel:{ksize},iterations:{iterations}"]
-        )
-
-        self.blur = image.copy()
-
+        blur = image.copy()
         for _ in range(iterations):
-            self.blur = cv2.GaussianBlur(self.blur, ksize, cv2.BORDER_DEFAULT)
-        return self.blur
+            blur = cv2.GaussianBlur(blur, ksize, cv2.BORDER_DEFAULT)
+        self.log_image_processing(blur, f"gblur,kernel:{ksize},iterations:{iterations}")
+        return blur
 
     def adaptive_threshold(self, image, blockSize=15, C=3):
         """apply adaptive threshold to the image"""
-        self.processing_data.append(
-            [f"operation:adaptive_threshold,blockSize:{blockSize},C:{C}"]
-        )
         image = image.copy()
-
-        self.adaptive_gaussian_threshold = cv2.adaptiveThreshold(
+        adaptive_gaussian_threshold = cv2.adaptiveThreshold(
             src=image,
             maxValue=255,
             adaptiveMethod=cv2.ADAPTIVE_THRESH_MEAN_C,
@@ -49,147 +34,222 @@ class ImageSegmentation:
             blockSize=blockSize,
             C=C,
         )
-        return self.adaptive_gaussian_threshold
+        self.log_image_processing(
+            adaptive_gaussian_threshold,
+            f"adaptive_threshold,blockSize:{blockSize},C:{C}",
+        )
+        return adaptive_gaussian_threshold
 
     def dilate(self, image, kernel=(5, 5), iterations=7):
         """apply dilation to the image"""
-        self.processing_data.append(
-            [f"operation:dilate,kernel:{kernel},iterations:{iterations}"]
-        )
         image = image.copy()
-
-        self.dilation = cv2.dilate(
+        dilation = cv2.dilate(
             src=image,
             kernel=kernel,
             iterations=iterations,
         )
-        return self.dilation
+
+        self.log_image_processing(
+            dilation,
+            f"dilate,kernel:{kernel},iterations:{iterations}",
+        )
+        return dilation
 
     def closing(self, image, kernel=(5, 5), iterations=10):
         """apply closing to the image"""
-        self.processing_data.append(
-            [f"operation:close,kernel:{kernel},iterations:{iterations}"]
-        )
         image = image.copy()
-
-        self.closing = cv2.morphologyEx(
+        closing = cv2.morphologyEx(
             src=image,
             op=cv2.MORPH_CLOSE,
             kernel=kernel,
             iterations=iterations,
         )
-        return self.closing
+
+        self.log_image_processing(
+            closing,
+            f"closing,kernel:{kernel},iterations:{iterations}",
+        )
+        return closing
 
     def opening(self, image, kernel=(5, 5), iterations=7):
         """apply opening to the image"""
-        self.processing_data.append(
-            [f"operation:open,kernel:{kernel},iterations:{iterations}"]
-        )
         image = image.copy()
-
-        self.opening = cv2.morphologyEx(
+        opening = cv2.morphologyEx(
             src=image,
             op=cv2.MORPH_OPEN,
             kernel=kernel,
             iterations=iterations,
         )
-        return self.opening
+        self.log_image_processing(
+            opening,
+            f"opening,kernel:{kernel},iterations:{iterations}",
+        )
+        return opening
 
-    # # @staticmethod
-    # def preprocessing(self):
-    #     """grayscaling and smoothing of the images"""
-    #     # extracting the intensity value of the image
-    #     self.grayscale = cv2.cvtColor(self.image.copy(), cv2.COLOR_BGRA2GRAY)
-    #     self.hsv = cv2.cvtColor(self.image.copy(), cv2.COLOR_BGR2HSV)
-    #     (self.hue, self.saturation, self.intensity) = cv2.split(self.hsv)
-    #     # -- analysis opportunity - intensity vs grayscale --
-    #
-    #     # applying gaussian blurring
-    #     blur = cv2.GaussianBlur(self.intensity, self.data["Kblur"], cv2.BORDER_DEFAULT)
-    #     for i in range(3):
-    #         blur = cv2.GaussianBlur(blur, self.data["Kblur"], cv2.BORDER_DEFAULT)
-    #
-    #     self.adaptive_gaussian_threshold = cv2.adaptiveThreshold(
-    #         src=blur,
-    #         maxValue=255,
-    #         adaptiveMethod=cv2.ADAPTIVE_THRESH_MEAN_C,
-    #         thresholdType=cv2.THRESH_BINARY,
-    #         blockSize=self.data["blockSize"],
-    #         C=self.data["C"],
-    #     )
-    #
-    #     self.dilation = cv2.dilate(
-    #         src=self.adaptive_gaussian_threshold.copy(),
-    #         kernel=self.data["KDil"],
-    #         iterations=self.data["iDil"],
-    #     )
-    #
-    #     # noise reduction in a binary image https://www.researchgate.net/publication/4376361_Noise_removal_and_enhancement_of_binary_images_using_morphological_operations
-    #
-    #     self.closing = cv2.morphologyEx(
-    #         src=self.adaptive_gaussian_threshold.copy(),
-    #         op=cv2.MORPH_CLOSE,
-    #         kernel=self.data["KClos"],
-    #         iterations=self.data["iClos"],
-    #     )
-    #
-    #     self.opening = cv2.morphologyEx(
-    #         src=self.adaptive_gaussian_threshold.copy(),
-    #         op=cv2.MORPH_OPEN,
-    #         kernel=self.data["KOpen"],
-    #         iterations=self.data["iOpen"],
-    #     )
-    #
-    #     K = 5
-    #     iterations = 7
-    #     self.dialte_opening = cv2.morphologyEx(
-    #         src=self.dilation.copy(),
-    #         op=cv2.MORPH_OPEN,
-    #         kernel=(K, K),
-    #         iterations=iterations,
-    #     )
-    #     self.dialte_closing = cv2.morphologyEx(
-    #         src=self.dilation.copy(),
-    #         op=cv2.MORPH_CLOSE,
-    #         kernel=(K, K),
-    #         iterations=iterations,
-    #     )
-    #
-    #     self.fill = fill(self.closing.copy())
-    #     self.fill2 = fill(self.opening.copy())
-    #     self.fill3 = fillCirc(self.fill2.copy())
-    #     # self.fill3 = fill(self.open_close.copy())
-    #     # self.fll2 = fillhole(self.opening)
+    @staticmethod
+    def preprocessing2(image):
+        return_data = {}
 
-    # @staticmethod
-    def preprocessing2(self,image):
-        image.grayscale = cv2.cvtColor(image.image, cv2.COLOR_BGRA2GRAY)
-        image.hsv = cv2.cvtColor(image.image, cv2.COLOR_BGR2HSV)
-        (image.hue, image.saturation, image.intensity) = cv2.split(image.hsv)
+        return_data["original"] = {
+            "image": image.image,
+            "operation": "original",
+            "params": "",
+            "show": True,
+        }
+        return_data["grayscale"] = {
+            "image": cv2.cvtColor(image.image, cv2.COLOR_BGRA2GRAY),
+            "operation": "COLOR_BGRA2GRAY",
+            "params": "",
+            "show": False,
+        }
+        return_data["hsv"] = {
+            "image": cv2.cvtColor(image.image, cv2.COLOR_BGR2HSV),
+            "operation": "COLOR_BGR2HSV",
+            "params": "",
+            "show": False,
+        }
+        (_, _, intensity) = cv2.split(return_data["hsv"]["image"])
+        return_data["intensity"] = {
+            "image": intensity,
+            "operation": "extract_v_channel",
+            "params": "",
+            "show": True,
+        }
+        return_data["blur"] = {
+            "image": image.blur(
+                return_data["intensity"]["image"], ksize=(3, 3), iterations=5
+            ),
+            "operation": "blur",
+            "params": image.processing_data[-1],
+            "show": True,
+        }
+        return_data["adaptive_gaussian_threshold"] = {
+            "image": image.adaptive_threshold(
+                image=return_data["blur"]["image"],
+                blockSize=15,
+                C=3,
+            ),
+            "operation": "adaptive_gaussian_threshold",
+            "params": image.processing_data[-1],
+            "show": True,
+        }
+        return_data["dilation"] = {
+            "image": image.dilate(
+                image=return_data["adaptive_gaussian_threshold"]["image"],
+                kernel=(5, 5),
+                iterations=7,
+            ),
+            "operation": "dilate",
+            "params": image.processing_data[-1],
+            "show": True,
+        }
+        return_data["closing"] = {
+            "image": image.closing(
+                image=return_data["adaptive_gaussian_threshold"]["image"],
+                kernel=(5, 5),
+                iterations=10,
+            ),
+            "operation": "closing",
+            "params": image.processing_data[-1],
+            "show": True,
+        }
+        return_data["opening"] = {
+            "image": image.opening(
+                image=return_data["adaptive_gaussian_threshold"]["image"],
+                kernel=(5, 5),
+                iterations=7,
+            ),
+            "operation": "opening",
+            "params": image.processing_data[-1],
+            "show": True,
+        }
+        return_data["fill"] = {
+            "image": fill(return_data["closing"]["image"].copy()),
+            "operation": "fill",
+            "params": "",
+            "show": True,
+        }
+        return_data["fill2"] = {
+            "image": fill(return_data["opening"]["image"].copy()),
+            "operation": "fill2",
+            "params": "",
+            "show": True,
+        }
+        return_data["fill3"] = {
+            "image": fillCirc(return_data["fill2"]["image"].copy()),
+            "operation": "fill3",
+            "params": "",
+            "show": True,
+        }
 
-        image.blur(image.intensity, ksize=(3, 3), iterations=5)
-        image.adaptive_threshold(
-            image=image.blur,
-            blockSize=15,
-            C=3,
-        )
-        image.dilate(
-            image.adaptive_gaussian_threshold,
-            kernel=(5, 5),
-            iterations=7,
-        )
-        image.closing(
-            image.adaptive_gaussian_threshold,
-            kernel=(5, 5),
-            iterations=10,
-        )
-        image.opening(
-            image.adaptive_gaussian_threshold,
-            kernel=(5, 5),
-            iterations=7,
-        )
-        # image.dialte_opening(image.dilation, kernel=(5, 5), iterations=7)
-        # image.dialte_closing(image.dilation, kernel=(5, 5), iterations=7)
-        image.fill = fill(image.closing.copy())
-        image.fill2 = fill(image.opening.copy())
-        image.fill3 = fillCirc(image.fill2.copy())
+        return_data["blur_on_fill"] = {
+            "image": image.blur(
+                return_data["fill"]["image"], ksize=(3, 3), iterations=5
+            ),
+            "operation": "blur",
+            "params": image.processing_data[-1],
+            "show": True,
+        }
+
+        return return_data
+
+        # return_data["grayscale"] = cv2.cvtColor(image.image, cv2.COLOR_BGRA2GRAY)
+        # return_data["hsv"] = cv2.cvtColor(image.image, cv2.COLOR_BGR2HSV)
+        # (return_data["hue"], return_data["saturation"], return_data["intensity"]) = cv2.split(
+        #     return_data["hsv"]
+        # )
+        # return_data["blur"] = image.blur(return_data["intensity"], ksize=(3, 3), iterations=5)
+        # return_data["adaptive_gaussian_threshold"] = image.adaptive_threshold(
+        #     image=return_data["blur"],
+        #     blockSize=15,
+        #     C=3,
+        # )
+        # return_data["dilation"] = image.dilate(
+        #     return_data["adaptive_gaussian_threshold"],
+        #     kernel=(5, 5),
+        #     iterations=7,
+        # )
+        # return_data["closing"] = image.closing(
+        #     return_data["adaptive_gaussian_threshold"],
+        #     kernel=(5, 5),
+        #     iterations=10,
+        # )
+        # return_data["opening"] = image.opening(
+        #     return_data["adaptive_gaussian_threshold"],
+        #     kernel=(5, 5),
+        #     iterations=7,
+        # )
+        # return_data["fill"] = fill(return_data["closing"].copy())
+        # return_data["fill2"] = fill(return_data["opening"].copy())
+        # return_data["fill3"] = fillCirc(return_data["fill2"].copy())
+
+        # image.grayscale = cv2.cvtColor(image.image, cv2.COLOR_BGRA2GRAY)
+        # image.hsv = cv2.cvtColor(image.image, cv2.COLOR_BGR2HSV)
+        # (image.hue, image.saturation, image.intensity) = cv2.split(image.hsv)
+
+        # image.blur = image.blur(image.intensity, ksize=(3, 3), iterations=5)
+        # image.adaptive_gaussian_threshold = image.adaptive_threshold(
+        #     image=image.blur,
+        #     blockSize=15,
+        #     C=3,
+        # )
+        # image.dilation = image.dilate(
+        #     image.adaptive_gaussian_threshold,
+        #     kernel=(5, 5),
+        #     iterations=7,
+        # )
+        # image.closing = image.closing(
+        #     image.adaptive_gaussian_threshold,
+        #     kernel=(5, 5),
+        #     iterations=10,
+        # )
+        # image.opening = image.opening(
+        #     image.adaptive_gaussian_threshold,
+        #     kernel=(5, 5),
+        #     iterations=7,
+        # )
+        # # image.dialte_opening(image.dilation, kernel=(5, 5), iterations=7)
+        # # image.dialte_closing(image.dilation, kernel=(5, 5), iterations=7)
+        # image.fill = fill(image.closing.copy())
+        # image.fill2 = fill(image.opening.copy())
+        # image.fill3 = fillCirc(image.fill2.copy())
