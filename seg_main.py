@@ -8,7 +8,7 @@ from segmentation.utils import get_images_in_path, show_image_list
 import multiprocessing as mp
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-path = "/home/kyro/Code/SegmentationsFeaturingAndTracking/data/ball_frames"
+path = "data/ball_frames"
 
 
 def store_image_data(log_data, time: datetime):

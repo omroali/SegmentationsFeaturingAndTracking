@@ -10,7 +10,5 @@ packaging==24.0
 pillow==10.2.0
 pyparsing==3.1.2
 python-dateutil==2.9.0.post0
-seg-assignment @ file:///home/kyro/Code/SegmentationsFeaturingAndTracking
-SegmentationsFeaturingAndTracking @ file:///home/kyro/Code/SegmentationsFeaturingAndTracking
 six==1.16.0
 tqdm==4.66.2
