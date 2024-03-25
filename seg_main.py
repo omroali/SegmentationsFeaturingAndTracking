@@ -20,8 +20,9 @@ def store_image_data(image: ImageSegmentation, time: datetime):
                 f.write(f"{entry}\n")
 
 
-def process_image(image_path, time: datetime, i: int):
+def process_image(inputs) -> None:
     """method to process the image"""
+    [image_path, time] = inputs
     image = ImageSegmentation(image_path)
     image.preprocessing2(image)
     images = {
@@ -38,10 +39,12 @@ def process_image(image_path, time: datetime, i: int):
         "circular_fill": image.fill3,
     }
 
+    name = os.path.splitext(os.path.basename(image_path))[0]
+
     show_image_list(
         image_dict=images,
         figsize=(10, 10),
-        save_path=f"process_data/{time}/img_{i}",
+        save_path=f"process_data/{time}/{name}",
     )
 
     store_image_data(image, time)
@@ -52,9 +55,16 @@ def main():
     time = datetime.now().isoformat("_", timespec="seconds")
     os.mkdir(f"process_data/{time}")
 
-    for i, image in tqdm(enumerate(images), desc="Processing..:"):
-        mp.Process(target=process_image, args=(image, time, i)).start()
-
+    with mp.Pool(processes=10) as pool:
+        inputs = [[image, time] for image in images]
+        list(
+            tqdm(
+                pool.imap_unordered(process_image, inputs, chunksize=4),
+                total=len(images),
+            )
+        )
+        pool.close()
+        pool.join()
 
 if __name__ == "__main__":
     main()
