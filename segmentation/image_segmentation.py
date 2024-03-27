@@ -75,7 +75,6 @@ class ImageSegmentation:
         )
         return dilation
 
-
     def erode(self, image, kernel=(3, 3), iterations=1, op=cv2.MORPH_ELLIPSE):
         """apply dilation to the image"""
         image = image.copy()
@@ -109,7 +108,7 @@ class ImageSegmentation:
         )
         return closing
 
-    def opening(self, image, kernel=(5, 5), iterations=, op=cv2.MORPH_ELLIPSE):
+    def opening(self, image, kernel=(5, 5), iterations=1, op=cv2.MORPH_ELLIPSE):
         """apply opening to the image"""
         image = image.copy()
         kernel = cv2.getStructuringElement(op, kernel)
@@ -207,6 +206,7 @@ class ImageSegmentation:
         blank_image = np.zeros(img.shape, dtype=img.dtype)
 
         # Loop over contours
+        # print("\n\n -- next frame --")
         for c in cnts:
             # Calculate properties
             peri = cv2.arcLength(c, True)
@@ -220,14 +220,14 @@ class ImageSegmentation:
             radius = math.sqrt(area / math.pi)
             circ = int(2 * math.pi * radius)
 
-            if (len(approx) > 10) and (area > 300 and area < 1000):
-                if len(approx) < circ + 10 and len(approx) > circ - 10:
-                    # print("\ndetected")
-                    # print("approx", len(approx))
-                    # print("area", area)
-                    # print("peri", peri)
-                    # print("circ", circ)
-                    cv2.drawContours(blank_image, [c], -1, (255), 2)
+            if (len(approx) > 10) and (area > 400 and area < 4900):
+                # print("\ndetected")
+                # print("approx", len(approx))
+                print("area", area)
+                # print("peri", peri)
+                # print("circ", circ)
+                # if len(approx) < circ + 10 and len(approx) > circ - 10:
+                cv2.drawContours(blank_image, [c], -1, (255), 2)
                 # cv2.ellipse(blank_image, c, (255), 2)
         # cv2.imshow("cnts", blank_image)
         # cv2.waitKey(0)
@@ -348,15 +348,6 @@ class ImageSegmentation:
             "show": True,
         }
         image.fill_image(image_data, "erode")
-
-        # image_data["close"] = {
-        #     "image": image.closing(
-        #         image=image_data["fill_erode"]["image"].copy(),
-        #         kernel=(4, 4),
-        #         iterations=4,
-        #     ),
-        #     "show": True,
-        # }
         image_data["dilate_and_erode"] = {
             "image": image.dilate_and_erode(
                 image_data["fill_erode"]["image"].copy(),
@@ -384,57 +375,29 @@ class ImageSegmentation:
         image_data["dilate_2"] = {
             "image": image.dilate(
                 image=image_data["dilate_and_erode"]["image"].copy(),
-                kernel=(3, 3),
-                iterations=7,
+                kernel=(4, 4),
+                iterations=5,
             ),
             "show": True,
         }
-        # image_data["close_2"] = {
-        #     "image": image.closing(
-        #         image=image_data["dilate_and_erode"]["image"].copy(),
-        #         kernel=(5, 5),
-        #         iterations=3,
-        #     ),
-        #     "show": True,
-        # }
-        # image_data["open_2"] = {
-        #     "image": image.opening(
-        #         image=
-        #         # cv2.bitwise_not(
-        #         image_data["erode"]["image"].copy(),
-        #         # ),
-        #         kernel=(4, 4),
-        #         iterations=3,
-        #     ),
-        #     "operation": "opening",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
-        #
-        # image.fill_image(image_data, "erode")
-        #
-        # image_data["close"] = {
-        #     "image": image.closing(
-        #         image=image_data["fill_open_2"]["image"].copy(),
-        #         kernel=(2, 2),
-        #         iterations=10,
-        #     ),
-        #     "operation": "close",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
-        #
-        # image_data["dilate"] = {
-        #     "image": image.dilate(
-        #         image=image_data["close"]["image"].copy(),
-        #         kernel=(3, 3),
-        #         iterations=1,
-        #     ),
-        #     "operation": "dilate",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
+        image_data["dilate_and_erode_3"] = {
+            "image": image.dilate_and_erode(
+                image_data["fill_erode"]["image"].copy(),
+                k_d=4,
+                i_d=5,
+                k_e=5,
+                i_e=2,
+                iterations=1,
+                # op=cv2.MORPH_CROSS,
+            ),
+            "show": True,
+        }
 
-        # image.fill_image(image_data, "dilate")
-
+        contours = image.find_ball_contours(
+            cv2.bitwise_not(image_data[f"dilate_and_erode_3"]["image"])
+        )
+        image_data["contours"] = {
+            "image": contours,
+            "show": True,
+        }
         return image_data
