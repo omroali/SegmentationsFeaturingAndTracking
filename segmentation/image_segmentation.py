@@ -1,17 +1,24 @@
 import cv2
 from cv2.typing import MatLike
 import numpy as np
-from segmentation.utils import fillhole, fill, fillCirc
+from segmentation.utils import fill
 import math
 
 
-class ImageSegmentation:
 
-    def __init__(self, image_path: str, C=2.5):
-        self.image = cv2.imread(image_path)
+@dataclass(order=True)
+class ImageData:
+    image: MatLike
+    operation: str = ""
+    params: str = ""
+    show: bool = True
+
+
+class ImageSegmentation:
+    def __init__(self, image_path: str):
         self.processing_data = []
+        self.image = cv2.imread(image_path)
         self.processing_images = []
-        # self.C = C
 
     def log_image_processing(self, image, operation: str):
         """log the image processing"""
@@ -312,6 +319,7 @@ class ImageSegmentation:
         #     "params": image.processing_data[-1],
         #     "show": True,
         # }
+<<<<<<< Updated upstream
         # image_data["blur_reverse_2_factor_0.25"] = {
         #     "image": image_data["blur"]["image"]
         #     - image_data["blur_reverse"]["image"] * (1 / 4),
@@ -384,7 +392,7 @@ class ImageSegmentation:
         image_data["close"] = {
             "image": image.closing(
                 image=image_data["fill_open"]["image"].copy(),
-                kernel=(5, 5),
+               kernel=(5, 5),
                 iterations=3,
             ),
             "operation": "close",
