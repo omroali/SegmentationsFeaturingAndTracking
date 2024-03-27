@@ -16,8 +16,10 @@ def store_image_data(log_data, time: datetime):
     check_path = os.path.exists(f"process_data/{time}/data.txt")
     if not check_path:
         with open(f"process_data/{time}/data.txt", "w") as f:
-            for key in log_data.keys():
-                f.write(f"{log_data[key]}\n")
+            # for key in log_data.keys():
+            #     f.write(f"{log_data[key]}\n")
+            for log in log_data:
+                f.write(f"{log}\n")
 
 
 def process_image(inputs: list[list, bool]) -> None:
@@ -26,11 +28,11 @@ def process_image(inputs: list[list, bool]) -> None:
     image = ImageSegmentation(image_path)
     data = image.preprocessing2(image)
     processed_images = {}
-    log_data = {}
+    # log_data = {}
     for key in data.keys():
         if data[key]["show"] is not False:
             processed_images[key] = data[key]["image"]
-            log_data[key] = f'{data[key]["operation"]} - {data[key]["params"]}'
+    log_data = image.processing_data
 
     name = os.path.splitext(os.path.basename(image_path))[0]
 

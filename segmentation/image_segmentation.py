@@ -5,13 +5,12 @@ from segmentation.utils import fill
 import math
 
 
-
-@dataclass(order=True)
-class ImageData:
-    image: MatLike
-    operation: str = ""
-    params: str = ""
-    show: bool = True
+# @dataclass(order=True)
+# class ImageData:
+#     image: MatLike
+#     operation: str = ""
+#     params: str = ""
+#     show: bool = True
 
 
 class ImageSegmentation:
@@ -25,12 +24,22 @@ class ImageSegmentation:
         self.processing_data.append(operation)
         self.processing_images.append(image)
 
-    def blur(self, image, ksize=(3, 3), iterations=1):
+    def gblur(self, image, ksize=(3, 3), iterations=1):
         """apply gaussian blur to the image"""
         blur = image.copy()
         for _ in range(iterations):
             blur = cv2.GaussianBlur(blur, ksize, cv2.BORDER_DEFAULT)
         self.log_image_processing(blur, f"gblur,kernel:{ksize},iterations:{iterations}")
+        return blur
+
+    def mblur(self, image, ksize=3, iterations=1):
+        """apply gaussian blur to the image"""
+        blur = image.copy()
+        for _ in range(iterations):
+            blur = cv2.medianBlur(blur, ksize)
+        self.log_image_processing(
+            blur, f"medianblur,kernel:{ksize},iterations:{iterations}"
+        )
         return blur
 
     def adaptive_threshold(self, image, blockSize=15, C=3):
@@ -50,10 +59,10 @@ class ImageSegmentation:
         )
         return adaptive_gaussian_threshold
 
-    def dilate(self, image, kernel=(3, 3), iterations=1):
+    def dilate(self, image, kernel=(3, 3), iterations=1, op=cv2.MORPH_ELLIPSE):
         """apply dilation to the image"""
         image = image.copy()
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel)
+        kernel = cv2.getStructuringElement(op, kernel)
         dilation = cv2.dilate(
             src=image,
             kernel=kernel,
@@ -66,10 +75,11 @@ class ImageSegmentation:
         )
         return dilation
 
-    def erode(self, image, kernel=(3, 3), iterations=1):
+
+    def erode(self, image, kernel=(3, 3), iterations=1, op=cv2.MORPH_ELLIPSE):
         """apply dilation to the image"""
         image = image.copy()
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel)
+        kernel = cv2.getStructuringElement(op, kernel)
         dilation = cv2.erode(
             src=image,
             kernel=kernel,
@@ -99,10 +109,10 @@ class ImageSegmentation:
         )
         return closing
 
-    def opening(self, image, kernel=(5, 5), iterations=7):
+    def opening(self, image, kernel=(5, 5), iterations=, op=cv2.MORPH_ELLIPSE):
         """apply opening to the image"""
         image = image.copy()
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel)
+        kernel = cv2.getStructuringElement(op, kernel)
         opening = cv2.morphologyEx(
             src=image,
             op=cv2.MORPH_OPEN,
@@ -126,28 +136,29 @@ class ImageSegmentation:
         )
         return result
 
-    def dilateAndErode(self, image, k_d, k_e, iterations=1):
+    def dilate_and_erode(
+        self, image, k_d, i_d, k_e, i_e, iterations=1, op=cv2.MORPH_ELLIPSE
+    ):
         image = image.copy()
-        for i in range(iterations):
-            image = self.dilate(image, (k_d, k_d))
-            image = self.erode(image, (k_e, k_e))
+        for _ in range(iterations):
+            for _ in range(i_d):
+                image = self.dilate(image, (k_d, k_d), op=op)
+            for _ in range(i_e):
+                image = self.erode(image, (k_e, k_e), op=op)
         self.log_image_processing(
             image,
-            f"dilate_and_erode,k_d:{(k_d,k_d)},k_e:{(k_e, k_e)},iterations:{iterations}",
+            f"dilate_and_erode,k_d:{(k_d,k_d)},i_d={i_d},k_e:{(k_e, k_e)},i_e={i_e},iterations:{iterations}",
         )
         return image
 
-    def fill_image(self, image_data, name):
-
+    def fill_image(self, image_data, name, show=True):
         self.log_image_processing(
             image_data[name],
             f"fill_{name}",
         )
         image_data[f"fill_{name}"] = {
             "image": fill(image_data[name]["image"].copy()),
-            "operation": "fill",
-            "params": "",
-            "show": True,
+            "show": show,
         }
 
     def threshold(self, image_data, name, min=0, max=255):
@@ -155,7 +166,7 @@ class ImageSegmentation:
             image_data[name],
             f"threshold,min={min},max={max}",
         )
-        image_data[f"fkjill_{name}"] = {
+        image_data[f"fill_{name}"] = {
             "image": cv2.threshold(
                 image_data[name]["image"].copy(),
             ),
@@ -231,7 +242,6 @@ class ImageSegmentation:
         image_data["original"] = {
             "image": image.image,
             "operation": "original",
-            "params": "",
             "show": False,
         }
 
@@ -240,8 +250,6 @@ class ImageSegmentation:
             "image": cv2.threshold(
                 image_data["intensity"], 100, 255, cv2.THRESH_BINARY_INV
             ),
-            "operation": "extract_v_channel",
-            "params": "",
             "show": True,
         }
         # image_data["blur"] = {
@@ -261,8 +269,6 @@ class ImageSegmentation:
                     blockSize=blockSize,
                     C=C,
                 ),
-                "operation": "adaptive_gaussian_threshold",
-                "params": image.processing_data[-1],
                 "show": False,
             }
 
@@ -274,83 +280,41 @@ class ImageSegmentation:
 
         image_data["original"] = {
             "image": image.image,
-            "operation": "original",
-            "params": "",
             "show": False,
         }
         image_data["grayscale"] = {
             "image": cv2.cvtColor(image.image, cv2.COLOR_BGRA2GRAY),
-            "operation": "COLOR_BGRA2GRAY",
-            "params": "",
             "show": False,
         }
         image_data["hsv"] = {
             "image": cv2.cvtColor(image.image, cv2.COLOR_BGR2HSV),
-            "operation": "COLOR_BGR2HSV",
-            "params": "",
             "show": False,
         }
         (_, _, intensity) = cv2.split(image_data["hsv"]["image"])
         image_data["intensity"] = {
             "image": intensity,
-            "operation": "extract_v_channel",
-            "params": "",
             "show": True,
         }
-        # image_data["normalize"] = {
-        #     "image": cv2.normalize(image_data["intensity"]["image"], cv2.NORM_RELATIVE),
-        #     "operation": "blur",
-        #     "params": "",
-        #     "show": True,
-        # }
-        image_data["blur"] = {
-            "image": image.blur(
-                image_data["intensity"]["image"], ksize=(3, 3), iterations=3
+        image_data["gblur"] = {
+            "image": image.gblur(
+                image_data["intensity"]["image"], ksize=(3, 3), iterations=2
             ),
-            "operation": "blur",
-            "params": image.processing_data[-1],
             "show": True,
         }
-        # image_data["blur_reverse"] = {
-        #     "image": image.blur(
-        #         image_data["intensity"]["image"], ksize=(5, 5), iterations=1
-        #     ),
-        #     "operation": "blur",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
-<<<<<<< Updated upstream
-        # image_data["blur_reverse_2_factor_0.25"] = {
-        #     "image": image_data["blur"]["image"]
-        #     - image_data["blur_reverse"]["image"] * (1 / 4),
-        #     "operation": "blur",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
-        #
-        # kernel_sharp = np.array([[1, 1, 1], [1, 4, 1], [1, 1, 1]])/9
-        # image_data["sharpen"] = {
-        #     "image": image.generic_filter(
-        #         image=image_data["blur"]["image"],
-        #         kernel=kernel_sharp,
-        #         iterations=1,
-        #         custom_msg="sharpen",
-        #     ),
-        #     "operation": "sharpen",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
-        # blockSize = 19
-        # C = 4.7
+        image_data["blur"] = {
+            "image": image.mblur(
+                image_data["intensity"]["image"], ksize=3, iterations=2
+            ),
+            "show": True,
+        }
+
         name = "adap_gaus_thrsh"
         image_data[name] = {
             "image": image.adaptive_threshold(
                 image=image_data["blur"]["image"].copy(),
-                # blockSize=blockSize,
-                # C=C,
+                blockSize=19,
+                C=5,
             ),
-            "operation": "adaptive_gaussian_threshold",
-            "params": image.processing_data[-1],
             "show": True,
         }
 
@@ -370,274 +334,107 @@ class ImageSegmentation:
             "image": image.opening(
                 image=image_data["adap_gaus_thrsh"]["image"].copy(),
                 kernel=(5, 5),
-                iterations=3,
+                iterations=4,
             ),
-            "operation": "opening",
-            "params": image.processing_data[-1],
             "show": True,
         }
 
-        image_data["open"] = {
-            "image": image.opening(
+        image_data["erode"] = {
+            "image": image.erode(
                 image=image_data["open"]["image"].copy(),
                 kernel=(3, 3),
-                iterations=1,
+                iterations=2,
             ),
-            "operation": "opening",
-            "params": image.processing_data[-1],
             "show": True,
         }
-        image.fill_image(image_data, "open")
+        image.fill_image(image_data, "erode")
 
-        image_data["close"] = {
-            "image": image.closing(
-                image=image_data["fill_open"]["image"].copy(),
-               kernel=(5, 5),
+        # image_data["close"] = {
+        #     "image": image.closing(
+        #         image=image_data["fill_erode"]["image"].copy(),
+        #         kernel=(4, 4),
+        #         iterations=4,
+        #     ),
+        #     "show": True,
+        # }
+        image_data["dilate_and_erode"] = {
+            "image": image.dilate_and_erode(
+                image_data["fill_erode"]["image"].copy(),
+                k_d=5,
+                i_d=3,
+                k_e=10,
+                i_e=1,
                 iterations=3,
+                op=cv2.MORPH_CROSS,
             ),
-            "operation": "close",
-            "params": image.processing_data[-1],
             "show": True,
         }
-
-        image.fill_image(image_data, "close")
-
-        image_data["dilate"] = {
+        image_data["dilate_and_erode_2"] = {
+            "image": image.dilate_and_erode(
+                image_data["fill_erode"]["image"].copy(),
+                k_d=6,
+                i_d=3,
+                k_e=7,
+                i_e=2,
+                iterations=2,
+                # op=cv2.MORPH_CROSS,
+            ),
+            "show": True,
+        }
+        image_data["dilate_2"] = {
             "image": image.dilate(
-                image=image_data["fill_open"]["image"].copy(),
-                kernel=(5, 5),
-                iterations=3,
+                image=image_data["dilate_and_erode"]["image"].copy(),
+                kernel=(3, 3),
+                iterations=7,
             ),
-            "operation": "dilate",
-            "params": image.processing_data[-1],
             "show": True,
         }
-
-        image.fill_image(image_data, "dilate")
+        # image_data["close_2"] = {
+        #     "image": image.closing(
+        #         image=image_data["dilate_and_erode"]["image"].copy(),
+        #         kernel=(5, 5),
+        #         iterations=3,
+        #     ),
+        #     "show": True,
+        # }
+        # image_data["open_2"] = {
+        #     "image": image.opening(
+        #         image=
+        #         # cv2.bitwise_not(
+        #         image_data["erode"]["image"].copy(),
+        #         # ),
+        #         kernel=(4, 4),
+        #         iterations=3,
+        #     ),
+        #     "operation": "opening",
+        #     "params": image.processing_data[-1],
+        #     "show": True,
+        # }
+        #
+        # image.fill_image(image_data, "erode")
+        #
+        # image_data["close"] = {
+        #     "image": image.closing(
+        #         image=image_data["fill_open_2"]["image"].copy(),
+        #         kernel=(2, 2),
+        #         iterations=10,
+        #     ),
+        #     "operation": "close",
+        #     "params": image.processing_data[-1],
+        #     "show": True,
+        # }
         #
         # image_data["dilate"] = {
         #     "image": image.dilate(
-        #         image=image_data["fill_open"]["image"].copy(),
-        #         kernel=(6, 6),
-        #         iterations=2,
+        #         image=image_data["close"]["image"].copy(),
+        #         kernel=(3, 3),
+        #         iterations=1,
         #     ),
-        #     "operation": "dialte",
+        #     "operation": "dilate",
         #     "params": image.processing_data[-1],
         #     "show": True,
         # }
-        #
+
         # image.fill_image(image_data, "dilate")
 
-        # image_data["fill_open"] = {
-        #     "image": fill(image_data["open"]["image"].copy()),
-        #     "operation": "fill",
-        #     "params": "",
-        #     "show": True,
-        # }
-        #
-        # image_data["dilate_and_erode_on_open"] = {
-        #     "image": image.dilateAndErode(
-        #         image=image_data["open"]["image"].copy(),
-        #         k_d=3,
-        #         k_e=3,
-        #         iterations=7,
-        #     ),
-        #     "operation": "opening",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
-        # image_data["fill_dilate_and_erode_on_open"] = {
-        #     "image": fill(image_data["dilate_and_erode_on_open"]["image"].copy()),
-        #     "operation": "fill",
-        #     "params": "",
-
-        # image_data["dilation_on_erode"] = {
-        #     "image": image.dilate(
-        #         image=image_data["erode"]["image"].copy(),
-        #         kernel=(3, 3),
-        #         iterations=7,
-        #     ),
-        #     "operation": "dilate",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
-        # image_data["fill_dilation_on_erode"] = {
-        #     "image": fill(image_data["dilation_on_erode"]["image"].copy()),
-        #     "operation": "fill",
-        #     "params": "",
-        #     "show": True,
-        # }
-
-        # image_data["erode_on_dilation_on_erode"] = {
-        #     "image": image.erode(
-        #         image=image_data["dilation_on_erode"]["image"].copy(),
-        #         kernel=(5, 5),
-        #         iterations=4,
-        #     ),
-        #     "operation": "dilate",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
-        # image_data["fill_erode_on_dilation_on_erode"] = {
-        #     "image": fill(image_data["erode_on_dilation_on_erode"]["image"].copy()),
-        #     "operation": "fill",
-        #     "params": "",
-        #     "show": True,
-        # }
-        # image_data["open_on_dilation_on_erode_k3_i9"] = {
-        #     "image": image.opening(
-        #         image=image_data["dilation_on_erode"]["image"].copy(),
-        #         kernel=(3, 3),
-        #         iterations=9,
-        #     ),
-        #     "operation": "opening",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
-        # image_data["fill_open_on_dilation_on_erode_k3_i9"] = {
-        #     "image": fill(
-        #         image_data["open_on_dilation_on_erode_k3_i9"]["image"].copy()
-        #     ),
-        #     "operation": "fill",
-        #     "params": "",
-        #     "show": True,
-        # }
-        # image_data["open_on_dilation_on_erode_k5_i9"] = {
-        #     "image": image.opening(
-        #         image=image_data["dilation_on_erode"]["image"].copy(),
-        #         kernel=(5, 5),
-        #         iterations=9,
-        #     ),
-        #     "operation": "opening",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
-        # image_data["fill_open_on_dilation_on_erode_k5_i9"] = {
-        #     "image": fill(
-        #         image_data["open_on_dilation_on_erode_k5_i9"]["image"].copy()
-        #     ),
-        #     "operation": "fill",
-        #     "params": "",
-        #     "show": True,
-        # }
-        #
-        # image_data["closing_on_dilation_on_erode"] = {
-        #     "image": image.closing(
-        #         image=image_data["dilation_on_erode"]["image"].copy(),
-        #         kernel=(5, 5),
-        #         iterations=2,
-        #     ),
-        #     "operation": "closing",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
-        # image_data["fill_closing"] = {
-        #     "image": fill(image_data["closing_on_dilation_on_erode"]["image"].copy()),
-        #     "operation": "fill",
-        #     "params": "",
-        #     "show": True,
-        # }
-        #
-        # image_data["erode_on_dilation_on_erode"] = {
-        #     "image": image.erode(
-        #         image=image_data["adaptive_gaussian_threshold"]["image"].copy(),
-        #         kernel=(3, 3),
-        #         iterations=3,
-        #     ),
-        #     "operation": "erode",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
-        #
-        # image_data["fill_erode_on_dilation_on_erode"] = {
-        #     "image": fill(image_data["erode_on_dilation_on_erode"]["image"].copy()),
-        #     "operation": "fill",
-        #     "params": "",
-        #     "show": True,
-        # }
-        #
-        # image_data["fill_open_on_dilate"] = {
-        #     "image": fill(image_data["open_on_dilate"]["image"].copy()),
-        #     "operation": "fill",
-        #     "params": "",
-        #     "show": True,
-        # }
-        #
-        # image_data["fill3"] = {
-        #     "image": fillCirc(image_data["fill2"]["image"].copy()),
-        #     "operation": "fill3",
-        #     "params": "",
-        #     "show": True,
-        # }
-        #
-        # image_data["blur_on_fill"] = {
-        #     "image": image.blur(
-        #         image_data["fill"]["image"], ksize=(3, 3), iterations=5
-        #     ),
-        #     "operation": "blur",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
-        #
         return image_data
-        #
-        # image_data["grayscale"] = cv2.cvtColor(image.image, cv2.COLOR_BGRA2GRAY)
-        # image_data["hsv"] = cv2.cvtColor(image.image, cv2.COLOR_BGR2HSV)
-        # (image_data["hue"], return_data["saturation"], return_data["intensity"]) = cv2.split(
-        #     image_data["hsv"]
-        # )
-        # image_data["blur"] = image.blur(return_data["intensity"], ksize=(3, 3), iterations=5)
-        # image_data["adaptive_gaussian_threshold"] = image.adaptive_threshold(
-        #     image=image_data["blur"],
-        #     blockSize=15,
-        #     C=3,
-        # )
-        # image_data["dilation"] = image.dilate(
-        #     image_data["adaptive_gaussian_threshold"],
-        #     kernel=(5, 5),
-        #     iterations=7,
-        # )
-        # image_data["closing"] = image.closing(
-        #     image_data["adaptive_gaussian_threshold"],
-        #     kernel=(5, 5),
-        #     iterations=10,
-        # )
-        # image_data["opening"] = image.opening(
-        #     image_data["adaptive_gaussian_threshold"],
-        #     kernel=(5, 5),
-        #     iterations=7,
-        # )
-        # image_data["fill"] = fill(return_data["closing"].copy())
-        # image_data["fill2"] = fill(return_data["opening"].copy())
-        # image_data["fill3"] = fillCirc(return_data["fill2"].copy())
-        #
-        # image.grayscale = cv2.cvtColor(image.image, cv2.COLOR_BGRA2GRAY)
-        # image.hsv = cv2.cvtColor(image.image, cv2.COLOR_BGR2HSV)
-        # (image.hue, image.saturation, image.intensity) = cv2.split(image.hsv)
-        #
-        # image.blur = image.blur(image.intensity, ksize=(3, 3), iterations=5)
-        # image.adaptive_gaussian_threshold = image.adaptive_threshold(
-        #     image=image.blur,
-        #     blockSize=15,
-        #     C=3,
-        # )
-        # image.dilation = image.dilate(
-        #     image.adaptive_gaussian_threshold,
-        #     kernel=(5, 5),
-        #     iterations=7,
-        # )
-        # image.closing = image.closing(
-        #     image.adaptive_gaussian_threshold,
-        #     kernel=(5, 5),
-        #     iterations=10,
-        # )
-        # image.opening = image.opening(
-        #     image.adaptive_gaussian_threshold,
-        #     kernel=(5, 5),
-        #     iterations=7,
-        # )
-        # # image.dialte_opening(image.dilation, kernel=(5, 5), iterations=7)
-        # # image.dialte_closing(image.dilation, kernel=(5, 5), iterations=7)
-        # image.fill = fill(image.closing.copy())
-        # image.fill2 = fill(image.opening.copy())
-        # image.fill3 = fillCirc(image.fill2.copy())
