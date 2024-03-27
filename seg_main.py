@@ -20,9 +20,9 @@ def store_image_data(log_data, time: datetime):
                 f.write(f"{log_data[key]}\n")
 
 
-def process_image(inputs) -> None:
+def process_image(inputs: list[list, bool]) -> None:
     """method to process the image"""
-    [image_path, time] = inputs
+    [image_path, save, time] = inputs
     image = ImageSegmentation(image_path)
     data = image.preprocessing2(image)
     processed_images = {}
@@ -32,24 +32,44 @@ def process_image(inputs) -> None:
             processed_images[key] = data[key]["image"]
             log_data[key] = f'{data[key]["operation"]} - {data[key]["params"]}'
 
-    store_image_data(log_data, time)
-
     name = os.path.splitext(os.path.basename(image_path))[0]
+
+    save_path = None
+    if save:
+        dir = f"process_data/{time}"
+        save_path = f"{dir}/{name}"
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+        store_image_data(log_data, time)
 
     show_image_list(
         image_dict=processed_images,
         figsize=(10, 10),
-        save_path=f"process_data/{time}/{name}",
+        save_path=save_path,
     )
 
 
-def main():
-    images = get_images_in_path(path)
-    time = datetime.now().isoformat("_", timespec="seconds")
-    os.mkdir(f"process_data/{time}")
+# def evaluating_c():
+#     images = get_images_in_path(path)
+#
+#     time = datetime.now().isoformat("_", timespec="seconds") + f"C_{c}"
+#
+#     with mp.Pool() as pool:
+#         inputs = [[image, time, save, c] for image in images]
+#         list(
+#             tqdm(
+#                 pool.imap_unordered(process_image, inputs, chunksize=4),
+#                 total=len(images),
+#             )
+#         )
+#         pool.close()
+#         pool.join()
 
+
+def all_images(images, save=False):
     with mp.Pool() as pool:
-        inputs = [[image, time] for image in images]
+        time = datetime.now().isoformat("_", timespec="seconds")
+        inputs = [[image, save, time] for image in images]
         list(
             tqdm(
                 pool.imap_unordered(process_image, inputs, chunksize=4),
@@ -58,6 +78,12 @@ def main():
         )
         pool.close()
         pool.join()
+
+
+def main():
+    images = get_images_in_path(path)
+    all_images(images, True)
+    # process_image([images[10], False])
 
 
 if __name__ == "__main__":
