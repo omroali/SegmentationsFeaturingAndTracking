@@ -104,21 +104,29 @@ def process_all_images(images, save=False):
 def dice_score(processed_images, masks, seg_path):
     eval = []
     for idx, image in enumerate(processed_images):
-        eval.append(dice_similarity_score(image, masks[idx]))
-    max_score = max(eval)
-    min_score = min(eval)
+        score = dice_similarity_score(image, masks[idx])
+        if len(eval) == 0 or max(eval) < score:
+            max_score = score
+            max_score_image = image
+        if len(eval) == 0 or min(eval) > score:
+            min_score = score
+            min_score_image = image
+        eval.append(score)
     avg_score = sum(eval) / len(eval)
+    max_text = f"Max Score: {max_score} - {max_score_image}"
+    min_text = f"Min Score: {min_score} - {min_score_image}"
+    avg_text = f"Avg Score: {avg_score}"
     print("--- " + seg_path)
-    print(f"Max Score: {max_score}")
-    print(f"Min Score: {min_score}")
-    print(f"Avg Score: {avg_score}")
+    print(max_text)
+    print(min_text)
+    print(avg_text)
     print("---")
 
     with open(f"{seg_path}/dice_score.txt", "w") as f:
         f.write("---\n")
-        f.write(f"Max Score: {max_score}\n")
-        f.write(f"Min Score: {min_score}\n")
-        f.write(f"Avg Score: {avg_score}\n")
+        f.write(max_text)
+        f.write(min_text)
+        f.write(avg_text)
         f.write("---\n")
         f.write("Scores:\n")
         for score in eval:

@@ -163,19 +163,20 @@ class ImageSegmentation:
             "show": show,
         }
 
-    def threshold(self, image_data, name, min=0, max=255):
-        self.log_image_processing(
-            image_data[name],
-            f"threshold,min={min},max={max}",
-        )
-        image_data[f"fill_{name}"] = {
-            "image": cv2.threshold(
-                image_data[name]["image"].copy(),
-            ),
-            "operation": "threshold",
-            "params": f"min={min},max={max}",
-            "show": True,
-        }
+    # FIXME: remove this method
+    # def threshold(self, image_data, name, min=0, max=255):
+    #     self.log_image_processing(
+    #         image_data[name],
+    #         f"threshold,min={min},max={max}",
+    #     )
+    #         image_data[f"fill_{name}"] = {
+    #         "image": cv2.threshold(
+    #             image_data[name]["image"].copy(),
+    #         ),
+    #         "operation": "threshold",
+    #         "params": f"min={min},max={max}",
+    #         "show": True,
+    #     }
 
     # def hoff_transform(self, image):
     #     img = image.copy()
@@ -311,6 +312,15 @@ class ImageSegmentation:
             "show": False,
         }
 
+        intensity_threshold = cv2.threshold(
+            image_data["intensity"]["image"], 100, 255, cv2.THRESH_BINARY
+        )[1]
+
+        image_data["intensity_threshold"] = {
+            "image": intensity_threshold,
+            "show": True,
+        }
+
         name = "adap_gaus_thrsh"
         image_data[name] = {
             "image": image.adaptive_threshold(
@@ -399,8 +409,14 @@ class ImageSegmentation:
         segmentation = image.find_ball_contours(
             cv2.bitwise_not(image_data["dilate_and_erode_3"]["image"])
         )
+
+        segmentation_with_threshold = cv2.bitwise_and(
+            segmentation,
+            image_data["intensity_threshold"]["image"],
+        )
+
         image_data["segmentation"] = {
-            "image": segmentation,
+            "image": segmentation_with_threshold,
             "show": True,
         }
 
