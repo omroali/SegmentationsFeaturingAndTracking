@@ -11,10 +11,11 @@ def get_images_and_masks_in_path(folder_path):
     image_list = []
     mask_list = []
     for file_path in images:
-        if "GT" not in file_path:
-            image_list.append(file_path)
-        else:
-            mask_list.append(file_path)
+        if "data.txt" not in file_path:
+            if "GT" not in file_path:
+                image_list.append(file_path)
+            else:
+                mask_list.append(file_path)
 
     return natsorted(image_list), natsorted(mask_list)
 
@@ -29,6 +30,37 @@ def img_is_color(img):
             return True
 
     return False
+
+
+def dice_similarity_score(segmented_image_path, mask_path):
+    """
+    Computes the Dice similarity score between two binary images.
+    The Dice similarity score is defined as:
+    2 * |A ∩ B| / (|A| + |B|)
+    where A is the first image and B is the second image.
+
+    Parameters:
+    ----------
+    segmented_image: Numpy array
+        A binary image.
+    mask: Numpy array
+        A binary image.
+
+    Returns:
+    -------
+    float
+        The Dice similarity score.
+    """
+
+    seg = cv2.imread(segmented_image_path)
+    mask = cv2.imread(mask_path)
+    cv2.imshow("seg", seg)
+    cv2.imshow("mask", mask)
+    cv2.waitKey(0)
+    # assert seg.shape == mask.shape
+
+    intersection = np.logical_and(seg, mask)
+    return 2.0 * intersection.sum() / (seg.sum() + mask.sum())
 
 
 def show_image_list(

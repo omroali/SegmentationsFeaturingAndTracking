@@ -1,3 +1,4 @@
+import os
 import cv2
 from cv2.typing import MatLike
 import numpy as np
@@ -14,10 +15,12 @@ import math
 
 
 class ImageSegmentation:
-    def __init__(self, image_path: str):
+    def __init__(self, image_path: str, save_dir: str = None):
         self.processing_data = []
+        self.image_path = image_path
         self.image = cv2.imread(image_path)
         self.processing_images = []
+        self.save_dir = save_dir
 
     def log_image_processing(self, image, operation: str):
         """log the image processing"""
@@ -223,11 +226,11 @@ class ImageSegmentation:
             if (len(approx) > 10) and (area > 400 and area < 4900):
                 # print("\ndetected")
                 # print("approx", len(approx))
-                print("area", area)
+                # print("area", area)
                 # print("peri", peri)
                 # print("circ", circ)
                 # if len(approx) < circ + 10 and len(approx) > circ - 10:
-                cv2.drawContours(blank_image, [c], -1, (255), 2)
+                cv2.drawContours(blank_image, [c], -1, (255), cv2.FILLED)
                 # cv2.ellipse(blank_image, c, (255), 2)
         # cv2.imshow("cnts", blank_image)
         # cv2.waitKey(0)
@@ -280,7 +283,7 @@ class ImageSegmentation:
 
         image_data["original"] = {
             "image": image.image,
-            "show": False,
+            "show": True,
         }
         image_data["grayscale"] = {
             "image": cv2.cvtColor(image.image, cv2.COLOR_BGRA2GRAY),
@@ -293,19 +296,19 @@ class ImageSegmentation:
         (_, _, intensity) = cv2.split(image_data["hsv"]["image"])
         image_data["intensity"] = {
             "image": intensity,
-            "show": True,
+            "show": False,
         }
         image_data["gblur"] = {
             "image": image.gblur(
                 image_data["intensity"]["image"], ksize=(3, 3), iterations=2
             ),
-            "show": True,
+            "show": False,
         }
         image_data["blur"] = {
             "image": image.mblur(
                 image_data["intensity"]["image"], ksize=3, iterations=2
             ),
-            "show": True,
+            "show": False,
         }
 
         name = "adap_gaus_thrsh"
@@ -315,7 +318,7 @@ class ImageSegmentation:
                 blockSize=19,
                 C=5,
             ),
-            "show": True,
+            "show": False,
         }
 
         image.fill_image(image_data, name)
@@ -336,7 +339,7 @@ class ImageSegmentation:
                 kernel=(5, 5),
                 iterations=4,
             ),
-            "show": True,
+            "show": False,
         }
 
         image_data["erode"] = {
@@ -345,7 +348,7 @@ class ImageSegmentation:
                 kernel=(3, 3),
                 iterations=2,
             ),
-            "show": True,
+            "show": False,
         }
         image.fill_image(image_data, "erode")
         image_data["dilate_and_erode"] = {
@@ -358,7 +361,7 @@ class ImageSegmentation:
                 iterations=3,
                 op=cv2.MORPH_CROSS,
             ),
-            "show": True,
+            "show": False,
         }
         image_data["dilate_and_erode_2"] = {
             "image": image.dilate_and_erode(
@@ -370,7 +373,7 @@ class ImageSegmentation:
                 iterations=2,
                 # op=cv2.MORPH_CROSS,
             ),
-            "show": True,
+            "show": False,
         }
         image_data["dilate_2"] = {
             "image": image.dilate(
@@ -378,7 +381,7 @@ class ImageSegmentation:
                 kernel=(4, 4),
                 iterations=5,
             ),
-            "show": True,
+            "show": False,
         }
         image_data["dilate_and_erode_3"] = {
             "image": image.dilate_and_erode(
@@ -390,14 +393,15 @@ class ImageSegmentation:
                 iterations=1,
                 # op=cv2.MORPH_CROSS,
             ),
+            "show": False,
+        }
+
+        segmentation = image.find_ball_contours(
+            cv2.bitwise_not(image_data["fill_erode"]["image"])
+        )
+        image_data["segmentation"] = {
+            "image": segmentation,
             "show": True,
         }
 
-        contours = image.find_ball_contours(
-            cv2.bitwise_not(image_data[f"dilate_and_erode_3"]["image"])
-        )
-        image_data["contours"] = {
-            "image": contours,
-            "show": True,
-        }
         return image_data
