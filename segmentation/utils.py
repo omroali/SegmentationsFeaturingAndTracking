@@ -6,14 +6,17 @@ import matplotlib.pyplot as plt
 import cv2
 
 
-def get_images_in_path(folder_path):
+def get_images_and_masks_in_path(folder_path):
     images = sorted(filter(os.path.isfile, glob.glob(folder_path + "/*")))
-    list = []
+    image_list = []
+    mask_list = []
     for file_path in images:
         if "GT" not in file_path:
-            list.append(file_path)
+            image_list.append(file_path)
+        else:
+            mask_list.append(file_path)
 
-    return natsorted(list)
+    return natsorted(image_list), natsorted(mask_list)
 
 
 # source and modofied from https://stackoverflow.com/a/67992521

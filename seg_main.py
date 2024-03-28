@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 from datetime import datetime
 from segmentation.image_segmentation import ImageSegmentation
-from segmentation.utils import get_images_in_path, show_image_list
+from segmentation.utils import get_images_and_masks_in_path, show_image_list, evaluate_segmentation
 
 import multiprocessing as mp
 
@@ -16,8 +16,6 @@ def store_image_data(log_data, time: datetime):
     check_path = os.path.exists(f"process_data/{time}/data.txt")
     if not check_path:
         with open(f"process_data/{time}/data.txt", "w") as f:
-            # for key in log_data.keys():
-            #     f.write(f"{log_data[key]}\n")
             for log in log_data:
                 f.write(f"{log}\n")
 
@@ -68,7 +66,7 @@ def process_image(inputs: list[list, bool]) -> None:
 #         pool.join()
 
 
-def all_images(images, save=False):
+def process_all_images(images, save=False):
     with mp.Pool() as pool:
         time = datetime.now().isoformat("_", timespec="seconds")
         inputs = [[image, save, time] for image in images]
@@ -83,9 +81,11 @@ def all_images(images, save=False):
 
 
 def main():
-    images = get_images_in_path(path)
-    all_images(images, True)
+    images, masks = get_images_and_masks_in_path(path)
+    process_all_images(images, True)
     # process_image([images[10], False])
+
+    # eval = evaluate_segmentation(images, masks)
 
 
 if __name__ == "__main__":
