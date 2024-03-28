@@ -222,9 +222,15 @@ class ImageSegmentation:
                 continue  # Skip to the next iteration if area is zero
             # Filter for circular shapes
             radius = math.sqrt(area / math.pi)
-            circ = int(2 * math.pi * radius)
+            # circ = int(2 * math.pi * radius)
 
-            if (len(approx) > 10) and (area > 400 and area < 4900):
+            circularity = 4 * math.pi * area / (peri**2)
+
+            if (
+                (len(approx) > 10)
+                and (area > 400 and area < 4900)
+                and circularity > 0.5
+            ):
                 # print("\ndetected")
                 # print("approx", len(approx))
                 # print("area", area)
@@ -328,7 +334,7 @@ class ImageSegmentation:
                 blockSize=19,
                 C=5,
             ),
-            "show": False,
+            "show": True,
         }
 
         image.fill_image(image_data, name)
@@ -403,20 +409,41 @@ class ImageSegmentation:
                 iterations=1,
                 # op=cv2.MORPH_CROSS,
             ),
-            "show": False,
+            "show": True,
         }
 
-        segmentation = image.find_ball_contours(
+        image_data["segmentation_with_threshold"] = {
+            "image": cv2.bitwise_not(
+                cv2.bitwise_or(
+                    # cv2.bitwise_not(
+                    image_data["intensity_threshold"]["image"],
+                    # ),
+                    # cv2.bitwise_not(
+                    image_data["dilate_and_erode_3"]["image"],
+                ),
+            ),
+            "show": True,
+        }
+
+        contours = image.find_ball_contours(
+            # cv2.bitwise_not(image_data["dilate_and_erode_3"]["image"])
             cv2.bitwise_not(image_data["dilate_and_erode_3"]["image"])
         )
 
-        segmentation_with_threshold = cv2.bitwise_and(
-            segmentation,
-            image_data["intensity_threshold"]["image"],
-        )
+        image_data["contours"] = {
+            "image": contours,
+            "show": True,
+        }
 
         image_data["segmentation"] = {
-            "image": segmentation_with_threshold,
+            "image": cv2.bitwise_and(  # cv2.bitwise_not(
+                # cv2.bitwise_not(
+                image_data["intensity_threshold"]["image"],
+                # ),
+                # cv2.bitwise_not(
+                image_data["contours"]["image"],
+            ),
+            # ),
             "show": True,
         }
 

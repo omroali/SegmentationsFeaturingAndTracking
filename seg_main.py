@@ -113,10 +113,10 @@ def dice_score(processed_images, masks, seg_path):
             min_score_image = image
         eval.append(score)
     avg_score = sum(eval) / len(eval)
-    max_text = f"Max Score: {max_score} - {max_score_image}"
-    min_text = f"Min Score: {min_score} - {min_score_image}"
-    avg_text = f"Avg Score: {avg_score}"
-    print("--- " + seg_path)
+    max_text = f"Max Score: {max_score} - {max_score_image}\n"
+    min_text = f"Min Score: {min_score} - {min_score_image}\n"
+    avg_text = f"Avg Score: {avg_score}\n"
+    print("--- " + seg_path + '\n')
     print(max_text)
     print(min_text)
     print(avg_text)
