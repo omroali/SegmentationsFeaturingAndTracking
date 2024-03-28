@@ -32,7 +32,7 @@ def img_is_color(img):
     return False
 
 
-def dice_similarity_score(segmented_image_path, mask_path):
+def dice_similarity_score(seg_path, mask_path):
     """
     Computes the Dice similarity score between two binary images.
     The Dice similarity score is defined as:
@@ -52,15 +52,20 @@ def dice_similarity_score(segmented_image_path, mask_path):
         The Dice similarity score.
     """
 
-    seg = cv2.imread(segmented_image_path)
-    mask = cv2.imread(mask_path)
-    cv2.imshow("seg", seg)
-    cv2.imshow("mask", mask)
-    cv2.waitKey(0)
+    seg = cv2.threshold(cv2.imread(seg_path), 127, 255, cv2.THRESH_BINARY)[1]
+    mask = cv2.threshold(cv2.imread(mask_path), 127, 255, cv2.THRESH_BINARY)[1]
+    # cv2.imshow("seg", seg)
+    # cv2.imshow("mask", mask)
     # assert seg.shape == mask.shape
-
-    intersection = np.logical_and(seg, mask)
-    return 2.0 * intersection.sum() / (seg.sum() + mask.sum())
+    intersection = cv2.bitwise_and(seg, mask)
+    # cv2.imshow("intersection", intersection)
+    # cv2.waitKey(0)
+    dice_score = 2.0 * intersection.sum() / (seg.sum() + mask.sum())
+    # print("\nintersection", intersection.sum())
+    # print("seg", seg.sum())
+    # print("mask", mask.sum())
+    # print("dice", dice_score * 100)
+    return dice_score
 
 
 def show_image_list(

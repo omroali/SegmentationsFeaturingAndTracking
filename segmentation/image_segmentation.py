@@ -397,7 +397,7 @@ class ImageSegmentation:
         }
 
         segmentation = image.find_ball_contours(
-            cv2.bitwise_not(image_data["fill_erode"]["image"])
+            cv2.bitwise_not(image_data["dilate_and_erode_3"]["image"])
         )
         image_data["segmentation"] = {
             "image": segmentation,

@@ -70,10 +70,8 @@ def process_image(inputs: list[list, bool]) -> None:
         segmentation_path = f"{save_dir}/segmentation/"
         if not os.path.exists(segmentation_path):
             os.mkdir(segmentation_path)
-        name = f"{segmentation_path}{os.path.basename(image.image_path)}"
-        # print(image.image_path)
-        print(name)
-        cv2.imwrite(name, data["segmentation"]["image"])
+        seg_path = f"{segmentation_path}{os.path.basename(image.image_path)}"
+        cv2.imwrite(seg_path, data["segmentation"]["image"])
 
     show_image_list(
         image_dict=processed_images,
@@ -81,12 +79,13 @@ def process_image(inputs: list[list, bool]) -> None:
         save_path=save_path,
     )
 
-    return save_path
+    # return (save_path, seg_path)
 
 
 def process_all_images(images, save=False):
     time = datetime.now().isoformat("_", timespec="seconds")
     save_path = f"process_data/{time}"
+    seg_path = f"{save_path}/segmentation"
 
     with mp.Pool() as pool:
         inputs = [[image, save, time, save_path] for image in images]
@@ -99,22 +98,41 @@ def process_all_images(images, save=False):
         )
         pool.close()
         pool.join()
-    return save_path
+    return save_path, seg_path
+
+
+def dice_score(processed_images, masks, seg_path):
+    eval = []
+    for idx, image in enumerate(processed_images):
+        eval.append(dice_similarity_score(image, masks[idx]))
+    max_score = max(eval)
+    min_score = min(eval)
+    avg_score = sum(eval) / len(eval)
+    print("--- " + seg_path)
+    print(f"Max Score: {max_score}")
+    print(f"Min Score: {min_score}")
+    print(f"Avg Score: {avg_score}")
+    print("---")
+
+    with open(f"{seg_path}/dice_score.txt", "w") as f:
+        f.write("---\n")
+        f.write(f"Max Score: {max_score}\n")
+        f.write(f"Min Score: {min_score}\n")
+        f.write(f"Avg Score: {avg_score}\n")
+        f.write("---\n")
+        f.write("Scores:\n")
+        for score in eval:
+            f.write(f"\t{score}\n")
 
 
 def main():
     images, masks = get_images_and_masks_in_path(path)
-    processed_image_path = process_all_images(images, True)
+    processed_image_path, seg_path = process_all_images(images, True)
     # print(processed_image_path)
-    processed_images, _ = get_images_and_masks_in_path(processed_image_path)
+    # segmentation_path = f"{processed_image_path}/segmentation"
+    processed_images, _ = get_images_and_masks_in_path(seg_path)
     # process_image([images[10], False])
-
-    # print(processed_images)
-    # print(masks)
-    #
-    # for idx, image in enumerate(processed_images):
-    #     eval = dice_similarity_score(image, masks[idx])
-    #     print(eval)
+    dice_score(processed_images, masks, seg_path)
 
 
 if __name__ == "__main__":
