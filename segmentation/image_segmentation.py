@@ -202,7 +202,7 @@ class ImageSegmentation:
     #     # cv2.destroyAllWindows()
     #     return img
 
-    def find_ball_contours(self, image):
+    def find_ball_contours(self, image, circ_thresh, min_area=400, max_area=4900):
         img = image.copy()
         cnts = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
@@ -228,8 +228,8 @@ class ImageSegmentation:
 
             if (
                 (len(approx) > 10)
-                and (area > 400 and area < 4900)
-                and circularity > 0.5
+                and (area > min_area and area < max_area)
+                and circularity > circ_thresh
             ):
                 # print("\ndetected")
                 # print("approx", len(approx))
@@ -319,7 +319,7 @@ class ImageSegmentation:
         }
 
         intensity_threshold = cv2.threshold(
-            image_data["intensity"]["image"], 100, 255, cv2.THRESH_BINARY
+            image_data["intensity"]["image"], 125, 255, cv2.THRESH_BINARY
         )[1]
 
         image_data["intensity_threshold"] = {
@@ -409,7 +409,7 @@ class ImageSegmentation:
                 iterations=1,
                 # op=cv2.MORPH_CROSS,
             ),
-            "show": True,
+            "show": False,
         }
 
         image_data["segmentation_with_threshold"] = {
@@ -422,12 +422,13 @@ class ImageSegmentation:
                     image_data["dilate_and_erode_3"]["image"],
                 ),
             ),
-            "show": True,
+            "show": False,
         }
 
         contours = image.find_ball_contours(
             # cv2.bitwise_not(image_data["dilate_and_erode_3"]["image"])
-            cv2.bitwise_not(image_data["dilate_and_erode_3"]["image"])
+            cv2.bitwise_not(image_data["dilate_and_erode_3"]["image"]),
+            0.2,
         )
 
         image_data["contours"] = {
@@ -435,16 +436,76 @@ class ImageSegmentation:
             "show": True,
         }
 
-        image_data["segmentation"] = {
-            "image": cv2.bitwise_and(  # cv2.bitwise_not(
-                # cv2.bitwise_not(
+        image_data["im_1"] = {
+            "image": cv2.bitwise_not(
                 image_data["intensity_threshold"]["image"],
-                # ),
-                # cv2.bitwise_not(
+            ),
+            "show": False,
+        }
+
+        image_data["im_2"] = {
+            "image": cv2.bitwise_not(
                 image_data["contours"]["image"],
             ),
-            # ),
+            "show": False,
+        }
+
+        image_data["segmentation_before_recontour"] = {
+            "image": cv2.bitwise_not(
+                cv2.bitwise_or(
+                    image_data["im_1"]["image"], image_data["im_2"]["image"]
+                ),
+            ),
             "show": True,
         }
 
+        image_data["opening_after_segmentation"] = {
+            "image": image.opening(
+                image_data["segmentation_before_recontour"]["image"],
+                kernel=(2, 2),
+                iterations=10,
+            ),
+            "show": True,
+        }
+        image_data["erode_opening_after_segmentation"] = {
+            "image": image.erode(
+                image_data["opening_after_segmentation"]["image"],
+                kernel=(3, 3),
+                iterations=4,
+            ),
+            "show": False,
+        }
+        #
+        # image_data["closing_after_opening_after_segmentation"] = {
+        #     "image": image.closing(
+        #         image_data["opening_after_segmentation"]["image"],
+        #         kernel=(5, 5),
+        #         iterations=2,
+        #     ),
+        #     "show": True,
+        # }
+
+        image_data["dilate_after_segmentation"] = {
+            "image": image.dilate(
+                image_data["segmentation_before_recontour"]["image"],
+                kernel=(3, 3),
+                iterations=8,
+            ),
+            "show": True,
+        }
+        image_data["erode_dilate_after_segmentation"] = {
+            "image": image.erode(
+                image_data["dilate_after_segmentation"]["image"],
+                kernel=(3, 3),
+                iterations=5,
+            ),
+            "show": True,
+        }
+
+        image_data["segmentation"] = {
+            "image": image.find_ball_contours(
+                image_data["erode_dilate_after_segmentation"]["image"], 0.5, 200, 5000
+            ),
+            "show": True,
+        }
         return image_data
