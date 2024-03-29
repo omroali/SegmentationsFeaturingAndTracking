@@ -462,19 +462,19 @@ class ImageSegmentation:
         image_data["opening_after_segmentation"] = {
             "image": image.opening(
                 image_data["segmentation_before_recontour"]["image"],
-                kernel=(2, 2),
-                iterations=10,
+                kernel=(3, 3),
+                iterations=6,
             ),
             "show": True,
         }
-        image_data["erode_opening_after_segmentation"] = {
-            "image": image.erode(
-                image_data["opening_after_segmentation"]["image"],
-                kernel=(3, 3),
-                iterations=4,
-            ),
-            "show": False,
-        }
+        # image_data["erode_opening_after_segmentation"] = {
+        #     "image": image.erode(
+        #         image_data["opening_after_segmentation"]["image"],
+        #         kernel=(3, 3),
+        #         iterations=4,
+        #     ),
+        #     "show": False,
+        # }
         #
         # image_data["closing_after_opening_after_segmentation"] = {
         #     "image": image.closing(
@@ -485,26 +485,26 @@ class ImageSegmentation:
         #     "show": True,
         # }
 
-        image_data["dilate_after_segmentation"] = {
+        image_data["dilate_after_opening_after_segmentation"] = {
             "image": image.dilate(
-                image_data["segmentation_before_recontour"]["image"],
-                kernel=(3, 3),
-                iterations=8,
-            ),
-            "show": True,
-        }
-        image_data["erode_dilate_after_segmentation"] = {
-            "image": image.erode(
-                image_data["dilate_after_segmentation"]["image"],
+                image_data["opening_after_segmentation"]["image"],
                 kernel=(3, 3),
                 iterations=5,
             ),
             "show": True,
         }
+        # image_data["erode_dilate_after_segmentation"] = {
+        #     "image": image.erode(
+        #         image_data["dilate_after_segmentation"]["image"],
+        #         kernel=(3, 3),
+        #         iterations=5,
+        #     ),
+        #     "show": True,
+        # }
 
         image_data["segmentation"] = {
             "image": image.find_ball_contours(
-                image_data["erode_dilate_after_segmentation"]["image"], 0.5, 200, 5000
+                image_data["erode_dilate_after_segmentation"]["image"], 0.36, 150, 5000
             ),
             "show": True,
         }
