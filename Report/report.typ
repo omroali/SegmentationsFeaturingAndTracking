@@ -43,8 +43,7 @@ images) in the Appendix.
 #pagebreak()
 = Feature Calculation (30%)
 
-== Part A
-=== shape features 
+== Part A: Shape Features 
 For each of the ball patches, calculate four different shape features discussed in the lectures 
 
 === solidity, non-compactness, circularity, eccentricity
@@ -66,8 +65,10 @@ Based on your visualisations in Part a) and b), discuss which features appear to
 
 
 #pagebreak()
-= Object Tracking (30%)
+= Object Tracking (30%) 
 Implement a Kalman filter from scratch (not using any method/class from pre-built libraries) that accepts as input the noisy coordinates [na,nb] and produces as output the estimated coordinates [x\*,y\*]
+
+SEE Workshop 4 for the Kalman Filter implementation in Matlab
 
 Constant Velocity motion model F
 Constant time intervals Δt = 0.5
@@ -84,5 +85,6 @@ Discuss solution
 Assess the quality of the tracking by calculating the mean and standard deviation of the Root Mean Squared error (include the mathematical formulas you used for the error calculation in your report)
 
 Compare both noisy and estimated coordinates to the ground truth. Adjust the parameters associated with the Kalman filter, justify any choices of parameter(s) associated with Kalman Filter that can give you better estimation of the coordinates that are closer to the ground truth. 
+
 
 Discuss and justify your findings in the report.
