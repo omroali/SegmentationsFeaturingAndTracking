@@ -1,6 +1,9 @@
 import os
 import cv2
 
+from cv2.gapi import bitwise_and
+from matplotlib import pyplot as plt
+
 from segmentation.utils import get_images_and_masks_in_path
 
 
@@ -268,26 +271,71 @@ def texture_features(img, mask):
     return features
 
 
+import numpy as np
+from segmentation.utils import fill
+
+
+def get_segregated_balls_in_dir(path):
+    football_array = []
+    soccer_array = []
+    tennis_array = []
+
+    images, masks = get_images_and_masks_in_path(path)
+    for idx, _ in enumerate(images):
+        image = images[idx]
+        mask = masks[idx]
+        msk = cv2.imread(mask, cv2.IMREAD_GRAYSCALE)
+        _, msk = cv2.threshold(msk, 127, 255, cv2.THRESH_BINARY)
+
+        # overlay binay image over it's rgb counterpart
+        img = cv2.imread(image)
+        img = cv2.bitwise_and(cv2.cvtColor(msk, cv2.COLOR_GRAY2BGR), img)
+        contours, _ = cv2.findContours(msk, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            ball_img = np.zeros(msk.shape, dtype=np.uint8)
+            cv2.drawContours(ball_img, contour, -1, (255, 255, 255), -1)
+            fill_img = cv2.bitwise_not(fill(cv2.bitwise_not(ball_img)))
+            if area > 1300:  # football
+                print("football")
+                football_array.append(fill_img)
+            elif area > 500:  # soccer ball
+                print("ball")
+                soccer_array.append(fill_img)
+            else:  # tennis ball
+                print("tennis ball")
+                tennis_array.append(fill_img)
+
+    # Convert the features to a NumPy array
+    return {
+        "football_images": football_array,
+        "soccer_images": soccer_array,
+        "tennis_images": tennis_array,
+    }
+
+
 if __name__ == "__main__":
-
-    # get images and masks in path
-    images, masks = get_images_and_masks_in_path("data/ball_frames")
-
-    # Load a binary image (you can replace this with your own binary image)
-    img = cv2.imread("data/ball_frames/frame-100_GT.png", cv2.IMREAD_GRAYSCALE)
-    _, img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
-
-    # overlay binay image over it's rgb counterpart
-    image = cv2.imread("data/ball_frames/frame-100.png")
-    image = cv2.bitwise_and(cv2.cvtColor(img, cv2.COLOR_GRAY2BGR), image)
-
-    print(
-        "Non-compactness:",
-        evaluate_non_compactness("data/ball_frames/frame-100_GT.png"),
-    )
-    print("Solidity:", evaluate_solidity("data/ball_frames/frame-100_GT.png"))
-    print("Circularity:", evaluate_circularity("data/ball_frames/frame-100_GT.png"))
-    print("Eccentricity:", evaluate_eccentricity("data/ball_frames/frame-100_GT.png"))
-
-    cv2.imshow("Overlay", image)
-    cv2.waitKey(0)
+    shape_features = evaluate_shape_features_in_dir("data/ball_frames")
+    print(shape_features)
+    # # get images and masks in path
+    # images, masks = get_images_and_masks_in_path("data/ball_frames")
+    #
+    # # Load a binary image (you can replace this with your own binary image)
+    # img = cv2.imread("data/ball_frames/frame-100_GT.png", cv2.IMREAD_GRAYSCALE)
+    # _, img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
+    #
+    # # overlay binay image over it's rgb counterpart
+    # image = cv2.imread("data/ball_frames/frame-100.png")
+    # image = cv2.bitwise_and(cv2.cvtColor(img, cv2.COLOR_GRAY2BGR), image)
+    #
+    # print(
+    #     "Non-compactness:",
+    #     evaluate_non_compactness("data/ball_frames/frame-100_GT.png"),
+    # )
+    # print("Solidity:", evaluate_solidity("data/ball_frames/frame-100_GT.png"))
+    # print("Circularity:", evaluate_circularity("data/ball_frames/frame-100_GT.png"))
+    # print("Eccentricity:", evaluate_eccentricity("data/ball_frames/frame-100_GT.png"))
+    #
+    # cv2.imshow("Overlay", image)
+    # cv2.waitKey(0)
