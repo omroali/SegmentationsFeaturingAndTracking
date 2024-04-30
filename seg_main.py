@@ -50,7 +50,7 @@ def process_image(inputs: list[list, bool]) -> None:
     # print(save_dir)
 
     image = ImageSegmentation(image_path, save_dir)
-    data = image.preprocessing2(image)
+    data = image.preprocessing(image)
     processed_images = {}
     # log_data = {}
     for key in data.keys():
@@ -67,11 +67,12 @@ def process_image(inputs: list[list, bool]) -> None:
             os.mkdir(save_dir)
         store_image_data(log_data, time)
 
-        segmentation_path = f"{save_dir}/segmentation/"
-        if not os.path.exists(segmentation_path):
-            os.mkdir(segmentation_path)
-        seg_path = f"{segmentation_path}{os.path.basename(image.image_path)}"
-        cv2.imwrite(seg_path, data["segmentation"]["image"])
+        if data["segmentation"]["image"] is not None:
+            segmentation_path = f"{save_dir}/segmentation/"
+            if not os.path.exists(segmentation_path):
+                os.mkdir(segmentation_path)
+            seg_path = f"{segmentation_path}{os.path.basename(image.image_path)}"
+            cv2.imwrite(seg_path, data["segmentation"]["image"])
 
     show_image_list(
         image_dict=processed_images,
@@ -98,6 +99,7 @@ def process_all_images(images, save=False):
         )
         pool.close()
         pool.join()
+
     return save_path, seg_path
 
 
@@ -116,7 +118,7 @@ def dice_score(processed_images, masks, seg_path):
     max_text = f"Max Score: {max_score} - {max_score_image}\n"
     min_text = f"Min Score: {min_score} - {min_score_image}\n"
     avg_text = f"Avg Score: {avg_score}\n"
-    print("--- " + seg_path + '\n')
+    print("--- " + seg_path + "\n")
     print(max_text)
     print(min_text)
     print(avg_text)
