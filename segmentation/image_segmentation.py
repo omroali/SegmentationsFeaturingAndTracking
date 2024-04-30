@@ -5,14 +5,12 @@ import numpy as np
 from segmentation.utils import fill
 import math
 
-
 # @dataclass(order=True)
 # class ImageData:
 #     image: MatLike
 #     operation: str = ""
 #     params: str = ""
 #     show: bool = True
-
 
 class ImageSegmentation:
     def __init__(self, image_path: str, save_dir: str = None):

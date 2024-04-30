@@ -57,12 +57,25 @@
 # end
 
 
+constant_velocity_motion_model = None
+delta_t = 0.5
+
+
 def kalman_filter(noise_coords: tuple):
-    
 
     estimate_coords = noise_coords
     return estimate_coords
 
+
+
+def root_mean_squared_error():
+    # return std and mean
+    pass
+
+
+def root_mean_squared_to_ground_truth()
+    # 
+    pass
 
 def main():
     pass
