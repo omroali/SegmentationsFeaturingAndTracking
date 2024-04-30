@@ -26,16 +26,19 @@ which is defined in Equation 1; where M is the segmented ball region you obtaine
 $ "DS" = (2*|M sect S|) / (|M| + |S|) $
 
 
-
 #line(length: 100%)
 
 Your report should include: \
 1) for all the 63 ball images, please provide a bar graph with x-axis\
-representing the number of the image, and y-axis representing the corresponding DS. \ 2) calculate the mean and standard deviation of the DS for all the 63 images
-\ 3) briefly
-describe and justify the implementation steps. Please note that you are required to show the
-best 5 and worst 5 segmented ball images (along with the corresponding ball GT mask
-images) in the Appendix.
+representing the number of the image, and y-axis representing the corresponding DS. 
+
+\ 2) calculate the mean and standard deviation of the DS for all the 63 images
+
+\ 3) briefly describe and justify the implementation steps.
+
+
+
+[best 5] and [worst 5] (along with the corresponding ball GT mask images) in the Appendix.
 
 #line(length: 100%)
 

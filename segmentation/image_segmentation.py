@@ -12,6 +12,7 @@ import math
 #     params: str = ""
 #     show: bool = True
 
+
 class ImageSegmentation:
     def __init__(self, image_path: str, save_dir: str = None):
         self.processing_data = []
