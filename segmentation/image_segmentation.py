@@ -227,7 +227,7 @@ class ImageSegmentation:
             circularity = 4 * math.pi * area / (peri**2)
 
             if (
-                (len(approx) > 10)
+                (len(approx) > 5)
                 and (area > min_area and area < max_area)
                 and circularity > circ_thresh
             ):
@@ -258,7 +258,7 @@ class ImageSegmentation:
         (_, _, intensity) = cv2.split(cv2.cvtColor(image.image, cv2.COLOR_BGR2HSV))
         image_data["intensity"] = {
             "image": cv2.threshold(
-                image_data["intensity"], 100, 255, cv2.THRESH_BINARY_INV
+                image_data["intensity"], 95, 255, cv2.THRESH_BINARY_INV
             ),
             "show": True,
         }
@@ -443,7 +443,7 @@ class ImageSegmentation:
             "image": image.dilate(
                 image_data["opening_after_segmentation"]["image"],
                 kernel=(3, 3),
-                iterations=5,
+                iterations=3,
             ),
             "show": True,
         }
