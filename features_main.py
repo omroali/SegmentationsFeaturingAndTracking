@@ -14,7 +14,7 @@ from skimage.feature import graycomatrix, graycoprops
 
 BALL_SMALL = "Tennis"
 BALL_MEDIUM = "Football"
-BALL_LARGE = "American_Football"
+BALL_LARGE = "American\nFootball"
 
 
 def shape_features_eval(contour):
@@ -260,10 +260,10 @@ if __name__ == "__main__":
         ball: features[ball]["shape_features"]["eccentricity"] for ball in balls
     }
 
-    get_histogram(non_compactness, "Non-Compactness")
-    get_histogram(solidity, "Soliditiy")
-    get_histogram(circularity, "Circularity")
-    get_histogram(eccentricity, "Eccentricity")
+    # get_histogram(non_compactness, "Non-Compactness")
+    # get_histogram(solidity, "Soliditiy")
+    # get_histogram(circularity, "Circularity")
+    # get_histogram(eccentricity, "Eccentricity")
 
     channel_colours = ["red", "green", "blue"]
 
@@ -289,10 +289,10 @@ if __name__ == "__main__":
     correlation_data = get_ch_stats(correlation_avg)
     asm_range_data = get_ch_stats(asm_range)
 
-    asm_titles = ["R-ASM", "G-ASM", "B-ASM"]
-    contrast_titles = ["R-Contrast", "G-Contrast", "B-Contrast"]
-    correlation_titles = ["R-Correlation", "G-Correlation", "B-Correlation"]
-    asm_range_titles = ["R-ASM Range", "G-ASM Range", "B-ASM Range"]
+    asm_titles = ["Red Channel\nASM Avg", "Green Channel\nASM Avg", "Blue Channel\nASM Avg"]
+    contrast_titles = ["Red Channel\nContrast Avg", "Green Channel\nContrast Avg", "Blue Channel\nContrast Avg"]
+    correlation_titles = ["Red Channel\nCorrelation Avg", "Green Channel\nCorrelation Avg", "Blue Channel\nCorrelation Avg"]
+    asm_range_titles = ["Red Channel\nASM Range Avg", "Green Channel\nASM Range  Avg", "Blue Channel\nASM Range Avg"]
 
     plt_colours = ["yellow", "white", "orange"]
     plt.figure()
@@ -300,19 +300,24 @@ if __name__ == "__main__":
     def get_boxplot(data, titles, colours=plt_colours, rows=3, columns=3, offset=0):
         for i, d in enumerate(data):
             plt.subplot(rows, columns, i + offset + 1)
-            box = plt.boxplot(d, patch_artist=True, widths=0.2)
-            plt.xticks([1, 2, 3], balls)
+            # box = plt.boxplot(d, vert=True, patch_artist=True)
+            violins = plt.violinplot(d, showmeans=True, showmedians=False, showextrema=False)
+            for j, pc in enumerate(violins['bodies']):
+                pc.set_facecolor(colours[j])
+                pc.set_edgecolor('black')
+                pc.set_alpha(1)
+            plt.xticks([1, 2, 3], balls, rotation=45)
             plt.title(titles[i])
-            for j, patch in enumerate(box["boxes"]):
-                patch.set_facecolor(colours[j])
+            # for j, patch in enumerate(box["boxes"]):
+            #     patch.set_facecolor(colours[j])
+            plt.grid(axis='y') 
+
 
     columns = 3
-    rows = 4
+    rows = 1
     get_boxplot(asm_data, asm_titles, rows=rows, columns=columns, offset=0)
-    get_boxplot(contrast_data, contrast_titles, rows=rows, columns=columns, offset=3)
-    get_boxplot(
-        correlation_data, correlation_titles, rows=rows, columns=columns, offset=6
-    )
-    get_boxplot(asm_range_data, asm_range_titles, rows=rows, columns=columns, offset=9)
+    # get_boxplot(contrast_data, contrast_titles, rows=rows, columns=columns, offset=3)
+    # get_boxplot(correlation_data, correlation_titles, rows=rows, columns=columns, offset=6)
+    # get_boxplot(asm_range_data, asm_range_titles, rows=rows, columns=columns, offset=9)
     plt.tight_layout()
     plt.show()
