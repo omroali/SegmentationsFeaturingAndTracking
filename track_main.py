@@ -3,23 +3,30 @@ import cv2
 
 from cv2.gapi import bitwise_and
 from matplotlib import pyplot as plt
+from matplotlib.artist import get
 
 from segmentation.utils import get_images_and_masks_in_path
 import numpy as np
 from segmentation.utils import fill
 import math
+from skimage.measure import regionprops
 
 
 def shape_features_eval(contour):
     area = cv2.contourArea(contour)
+    # props = regionprops(contour)
 
     # getting non-compactness
     perimeter = cv2.arcLength(contour, closed=True)
     non_compactness = 1 - (4 * math.pi * area) / (perimeter**2)
 
     # getting solidity
-    convex_area = cv2.contourArea(contour)
+    convex_hull = cv2.convexHull(contour)
+    convex_area = cv2.contourArea(convex_hull)
+
     solidity = area / convex_area
+    # solidity = props[0].solidity
+    # print(props)
 
     # getting circularity
     circularity = (4 * math.pi * area) / (perimeter**2)
@@ -44,21 +51,21 @@ from skimage.feature import graycomatrix, graycoprops
 def texture_features_eval(patch):
     # # Define the co-occurrence matrix parameters
     distances = [1]
-    angles = [0, 45, 90, 135]
+    angles = np.radians([0, 45, 90, 135])
     levels = 256
     symmetric = True
     normed = True
-    # Calculate the co-occurrence matrix for each patch
-    features = []
-    # for patch in patches:
     glcm = graycomatrix(
         patch, distances, angles, levels, symmetric=symmetric, normed=normed
     )
+    filt_glcm = glcm[1:, 1:, :, :]
 
     # Calculate the Haralick features
-    asm = graycoprops(glcm, "ASM").flatten()
-    contrast = graycoprops(glcm, "contrast").flatten()
-    correlation = graycoprops(glcm, "correlation").flatten()
+    asm = graycoprops(filt_glcm, "ASM").flatten()
+    # contrast = graycoprops(glcm, "contrast").flatten()
+    contrast = graycoprops(filt_glcm, "contrast").flatten()
+    correlation = graycoprops(filt_glcm, "correlation").flatten()
+
     # Calculate the feature average and range across the 4 orientations
     asm_avg = np.mean(asm)
     contrast_avg = np.mean(contrast)
@@ -66,6 +73,7 @@ def texture_features_eval(patch):
     asm_range = np.ptp(asm)
     contrast_range = np.ptp(contrast)
     correlation_range = np.ptp(correlation)
+
     return {
         "asm": asm,
         "contrast": contrast,
@@ -146,13 +154,20 @@ def get_all_features_balls(path):
 
             out = fill_img.copy()
             out_colour = rgb_fill.copy()
-            # Now crop
+
+            # Now crop image to ball size
             (y, x) = np.where(fill_img == 255)
             (topy, topx) = (np.min(y), np.min(x))
             (bottomy, bottomx) = (np.max(y), np.max(x))
-            out = out[topy : bottomy + 1, topx : bottomx + 1]
-            out_colour = out_colour[topy : bottomy + 1, topx : bottomx + 1]
+            padding = 3
+            out = out[
+                topy - padding : bottomy + padding, topx - padding : bottomx + padding
+            ]
+            out_colour = out_colour[
+                topy - padding : bottomy + padding, topx - padding : bottomx + padding
+            ]
 
+            # getting ball features
             shape_features = shape_features_eval(contour)
             texture_features_colour = {
                 "blue": texture_features_eval(out_colour[:, :, 0]),
@@ -160,6 +175,7 @@ def get_all_features_balls(path):
                 "red": texture_features_eval(out_colour[:, :, 2]),
             }
 
+            # segmenting ball by using area
             if area > 1300:  # football
                 append_ball = "football"
             elif area > 500:  # soccer_ball
@@ -179,7 +195,6 @@ def get_all_features_balls(path):
 
 
 def feature_stats(features, ball, colours=["blue", "green", "red"]):
-
     def get_stats(array):
         return {
             "mean": np.mean(array),
@@ -211,7 +226,6 @@ def feature_stats(features, ball, colours=["blue", "green", "red"]):
             },
         },
     }
-
     return stats
 
 
@@ -234,12 +248,17 @@ if __name__ == "__main__":
     # stats = feature_stats(features, "football", ["red", "green", "blue"])
     # print(stats)
 
-    balls = ["football", "soccer", "tennis"]
+    balls = [
+        "tennis",
+        "soccer",
+        "football",
+    ]
 
     non_compactness = {
         ball: features[ball]["shape_features"]["non_compactness"] for ball in balls
     }
     solidity = {ball: features[ball]["shape_features"]["solidity"] for ball in balls}
+    # print(solidity)
     circularity = {
         ball: features[ball]["shape_features"]["circularity"] for ball in balls
     }
@@ -254,49 +273,20 @@ if __name__ == "__main__":
 
     # TODO: calculate range of the feature average
 
-    asm_avg = {
-        "red": {
-            ball: features[ball]["texture_features"]["red"]["asm_avg"] for ball in balls
-        },
-        "green": {
-            ball: features[ball]["texture_features"]["green"]["asm_avg"]
-            for ball in balls
-        },
-        "blue": {
-            ball: features[ball]["texture_features"]["blue"]["asm_avg"]
-            for ball in balls
-        },
-    }
+    channel_colours = ["red", "green", "blue"]
 
-    contrast_avg = {
-        "red": {
-            ball: features[ball]["texture_features"]["red"]["contrast_avg"]
-            for ball in balls
-        },
-        "green": {
-            ball: features[ball]["texture_features"]["green"]["contrast_avg"]
-            for ball in balls
-        },
-        "blue": {
-            ball: features[ball]["texture_features"]["blue"]["contrast_avg"]
-            for ball in balls
-        },
-    }
+    def get_ch_features(feature_name):
+        return {
+            colour: {
+                ball: features[ball]["texture_features"][colour][feature_name]
+                for ball in balls
+            }
+            for colour in channel_colours
+        }
 
-    correlation_avg = {
-        "red": {
-            ball: features[ball]["texture_features"]["red"]["correlation_avg"]
-            for ball in balls
-        },
-        "green": {
-            ball: features[ball]["texture_features"]["green"]["correlation_avg"]
-            for ball in balls
-        },
-        "blue": {
-            ball: features[ball]["texture_features"]["blue"]["correlation_avg"]
-            for ball in balls
-        },
-    }
+    asm_avg = get_ch_features("asm_avg")
+    contrast_avg = get_ch_features("contrast_avg")
+    correlation_avg = get_ch_features("correlation_avg")
 
     red_asm_data = [asm_avg["red"][ball] for ball in balls]
     green_asm_data = [asm_avg["green"][ball] for ball in balls]
@@ -322,7 +312,7 @@ if __name__ == "__main__":
     contrast_titles = ["R-Contrast", "G-Contrast", "B-Contrast"]
     correlation_titles = ["R-Correlation", "G-Correlation", "B-Correlation"]
 
-    colours = ["red", "green", "blue"]
+    plt_colours = ["yellow", "white", "orange"]
     plt.figure()
     for i, d in enumerate(asm_data):
         plt.subplot(3, 3, i + 1)
@@ -330,20 +320,20 @@ if __name__ == "__main__":
         plt.xticks([1, 2, 3], balls)
         plt.title(asm_titles[i])
         for j, patch in enumerate(box["boxes"]):
-            patch.set_facecolor(colours[j])
+            patch.set_facecolor(plt_colours[j])
     for i, d in enumerate(contrast_data):
         plt.subplot(3, 3, i + 3 + 1)
         box = plt.boxplot(d, patch_artist=True, widths=0.2)
         plt.xticks([1, 2, 3], balls)
         plt.title(contrast_titles[i])
         for j, patch in enumerate(box["boxes"]):
-            patch.set_facecolor(colours[j])
+            patch.set_facecolor(plt_colours[j])
     for i, d in enumerate(correlation_data):
         plt.subplot(3, 3, i + 6 + 1)
         box = plt.boxplot(d, patch_artist=True, widths=0.2)
         plt.xticks([1, 2, 3], balls)
         plt.title(correlation_titles[i])
         for j, patch in enumerate(box["boxes"]):
-            patch.set_facecolor(colours[j])
+            patch.set_facecolor(plt_colours[j])
     plt.tight_layout()
     plt.show()
