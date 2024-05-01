@@ -300,7 +300,7 @@ if __name__ == "__main__":
     def get_boxplot(data, titles, colours=plt_colours, rows=3, columns=3, offset=0):
         for i, d in enumerate(data):
             plt.subplot(rows, columns, i + offset + 1)
-            # box = plt.boxplot(d, vert=True, patch_artist=True)
+            # box = plt.boxplot(d, vert=True, patch_artist=True, widths=0.2)
             violins = plt.violinplot(d, showmeans=True, showmedians=False, showextrema=False)
             for j, pc in enumerate(violins['bodies']):
                 pc.set_facecolor(colours[j])
@@ -316,8 +316,14 @@ if __name__ == "__main__":
     columns = 3
     rows = 1
     get_boxplot(asm_data, asm_titles, rows=rows, columns=columns, offset=0)
-    # get_boxplot(contrast_data, contrast_titles, rows=rows, columns=columns, offset=3)
-    # get_boxplot(correlation_data, correlation_titles, rows=rows, columns=columns, offset=6)
+    plt.tight_layout()
+    plt.show()
+
+    get_boxplot(contrast_data, contrast_titles, rows=rows, columns=columns, offset=0)
+    plt.tight_layout()
+    plt.show()
+
+    get_boxplot(correlation_data, correlation_titles, rows=rows, columns=columns, offset=0)
     # get_boxplot(asm_range_data, asm_range_titles, rows=rows, columns=columns, offset=9)
     plt.tight_layout()
     plt.show()
