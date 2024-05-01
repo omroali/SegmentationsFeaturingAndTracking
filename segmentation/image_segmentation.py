@@ -162,45 +162,6 @@ class ImageSegmentation:
             "show": show,
         }
 
-    # FIXME: remove this method
-    # def threshold(self, image_data, name, min=0, max=255):
-    #     self.log_image_processing(
-    #         image_data[name],
-    #         f"threshold,min={min},max={max}",
-    #     )
-    #         image_data[f"fill_{name}"] = {
-    #         "image": cv2.threshold(
-    #             image_data[name]["image"].copy(),
-    #         ),
-    #         "operation": "threshold",
-    #         "params": f"min={min},max={max}",
-    #         "show": True,
-    #     }
-
-    # def hoff_transform(self, image):
-    #     img = image.copy()
-    #     circles = cv2.HoughCircles(
-    #         img,
-    #         cv2.HOUGH_GRADIENT,
-    #         1,
-    #         20,
-    #         param1=50,
-    #         param2=30,
-    #         minRadius=10,
-    #         maxRadius=100,
-    #     )
-
-    #     # Draw detected circles
-    #     if circles is not None:
-    #         circles = np.uint16(np.around(circles))
-    #         for i in circles[0, :]:
-    #             cv2.circle(img, (i[0], i[1]), i[2], (0, 255, 0), 2)
-    #             cv2.circle(img, (i[0], i[1]), 2, (0, 0, 255), 3)
-    #     # cv2.imshow("Detected Circles", img)
-    #     # cv2.waitKey(0)
-    #     # cv2.destroyAllWindows()
-    #     return img
-
     def find_ball_contours(self, image, circ_thresh, min_area=400, max_area=4900):
         img = image.copy()
         cnts = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
