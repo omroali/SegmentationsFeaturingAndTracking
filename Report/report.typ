@@ -65,8 +65,6 @@ and produce perpatch features by calculating the feature average and range acros
 Based on your visualisations in Part a) and b), discuss which features appear to be best at differentiating between different ball types. For each ball type, are shape or texture features more informative? Which ball type is the easiest/hardest to distinguish, based on the calculated features? Which other features or types of features would you suggest for the task of differentiating between the different ball types and why?
 
 
-
-
 #pagebreak()
 = Object Tracking (30%) 
 Implement a Kalman filter from scratch (not using any method/class from pre-built libraries) that accepts as input the noisy coordinates [na,nb] and produces as output the estimated coordinates [x\*,y\*]
