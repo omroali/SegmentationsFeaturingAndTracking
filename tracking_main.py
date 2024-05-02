@@ -70,20 +70,20 @@ def error(x, y, px, py):
 
 def optimisation(trial, x, y, z, dt, nx, ny, nvx, nvy, nu, nv, x01, x02, x03, x04):
     # Q
-    nx = trial.suggest_float("nx", -3000.0, 3000.0)
-    ny = trial.suggest_float("ny", -3000.0, 7200.0)
-    nvx = trial.suggest_float("nvx", -3000.0, 3000.0)
-    nvy = trial.suggest_float("nvy", -7000.0, 7000.0)
+    # nx = trial.suggest_float("nx", -3000.0, 3000.0)
+    # ny = trial.suggest_float("ny", -3000.0, 7200.0)
+    # nvx = trial.suggest_float("nvx", -3000.0, 3000.0)
+    # nvy = trial.suggest_float("nvy", -7000.0, 7000.0)
 
     # R
-    nu = trial.suggest_float("nu", -25.0, 25.0)
-    nv = trial.suggest_float("nv", -25.0, 25.0)
+    # nu = trial.suggest_float("nu", -25.0, 25.0)
+    # nv = trial.suggest_float("nv", -25.0, 25.0)
 
     # init x
-    x01 = trial.suggest_float("x01", -0.0, 1000.0)
-    x02 = trial.suggest_float("x02", -0.0, 1000.0)
-    x03 = trial.suggest_float("x03", -0.0, 1000.0)
-    x04 = trial.suggest_float("x04", -0.0, 1000.0)
+    x01 = trial.suggest_float("x01", -200.0, 1000.0)
+    x02 = trial.suggest_float("x02", -200.0, 1000.0)
+    x03 = trial.suggest_float("x03", -200.0, 1000.0)
+    x04 = trial.suggest_float("x04", -200.0, 1000.0)
 
     px, py = kalman_tracking(z, x01, x02, x03, x04, dt, nx, ny, nvx, nvy, nu, nv)
     rms_val = rms(x, y, px, py)
@@ -99,7 +99,7 @@ def optimize_rms(x, y, z):
     import optuna
     from tqdm import tqdm
 
-    trials = 100000
+    trials = 1000
 
     pbar = tqdm(total=trials, desc="Optimization Progress")
 
@@ -189,7 +189,7 @@ if __name__ == "__main__":
     nb = np.genfromtxt("data/nb.csv", delimiter=",")
     z = np.stack((na, nb))
 
-    optimize_rms(x, y, z)
+    # optimize_rms(x, y, z)
 
     nx = 74.16461149558424
     ny = 5116.321061403971
@@ -212,6 +212,17 @@ if __name__ == "__main__":
     x02 = 441.2537740166025
     x03 = 395.294325684342
     x04 = -37.807362565797575
+
+    nx = 986.2429185451157
+    ny = 5919.531760939467
+    nvx = 0.7169563727200654
+    nvy = 5064.198891444827
+    nu = 2.8079222224627323
+    nv = -16.110942523796034
+    x01 = 584.8417681605206
+    x02 = 448.64207035865655
+    x03 = 59.73328857781342
+    x04 = 763.0144886665084
 
     px, py = kalman_tracking(
         nx=nx,
