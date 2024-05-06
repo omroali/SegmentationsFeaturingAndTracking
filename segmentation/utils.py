@@ -32,39 +32,69 @@ def img_is_color(img):
     return False
 
 
-def dice_similarity_score(seg_path, mask_path):
+from heapq import nlargest, nsmallest
+
+
+def dice_score(processed_images, masks, save_path):
+    eval = []
+    score_dict = {}
+    for idx, image in enumerate(processed_images):
+        score = dice_similarity_score(image, masks[idx], save_path)
+        score_dict[image] = score
+        if len(eval) == 0 or max(eval) < score:
+            max_score = score
+            max_score_image = image
+        if len(eval) == 0 or min(eval) > score:
+            min_score = score
+            min_score_image = image
+        eval.append(score)
+    avg_score = sum(eval) / len(eval)
+    max_text = f"Max Score: {max_score} - {max_score_image}\n"
+    min_text = f"Min Score: {min_score} - {min_score_image}\n"
+    avg_text = f"Avg Score: {avg_score}\n"
+    print("--- " + save_path + "\n")
+    print(max_text)
+    print(min_text)
+    print(avg_text)
+    print("---")
+
+    FiveHighest = nlargest(5, score_dict, key=score_dict.get)
+    FiveLowest = nsmallest(5, score_dict, key=score_dict.get)
+    with open(f"{save_path}/dice_score.txt", "w") as f:
+        f.write("---\n")
+        f.write(max_text)
+        f.write(min_text)
+        f.write(avg_text)
+        f.write("---\n")
+        f.write("Scores:\n")
+        # top_5 =
+        for idx, score in enumerate(eval):
+            f.write(f"\t{score}\t{masks[idx]}\n")
+        f.write("---\n")
+        f.write("5 highest:\n")
+        for v in FiveHighest:
+            f.write(f"{v}, {score_dict[v]}\n")
+        f.write("---\n")
+        f.write("5 lowest:\n")
+        for v in FiveLowest:
+            f.write(f"{v}, {score_dict[v]}\n")
+
+
+def dice_similarity_score(seg_path, mask_path, save_path):
     """
     Computes the Dice similarity score between two binary images.
     The Dice similarity score is defined as:
     2 * |A ∩ B| / (|A| + |B|)
     where A is the first image and B is the second image.
-
-    Parameters:
-    ----------
-    segmented_image: Numpy array
-        A binary image.
-    mask: Numpy array
-        A binary image.
-
-    Returns:
-    -------
-    float
-        The Dice similarity score.
     """
 
     seg = cv2.threshold(cv2.imread(seg_path), 127, 255, cv2.THRESH_BINARY)[1]
     mask = cv2.threshold(cv2.imread(mask_path), 127, 255, cv2.THRESH_BINARY)[1]
-    # cv2.imshow("seg", seg)
-    # cv2.imshow("mask", mask)
-    # assert seg.shape == mask.shape
     intersection = cv2.bitwise_and(seg, mask)
-    # cv2.imshow("intersection", intersection)
-    # cv2.waitKey(0)
     dice_score = 2.0 * intersection.sum() / (seg.sum() + mask.sum())
-    # print("\nintersection", intersection.sum())
-    # print("seg", seg.sum())
-    # print("mask", mask.sum())
-    # print("dice", dice_score * 100)
+
+    difference = cv2.bitwise_not(cv2.bitwise_or(cv2.bitwise_not(seg), mask))
+    cv2.imwrite(save_path + f"difference_ds_{dice_score}.jpg", difference)
     return dice_score
 
 
@@ -149,7 +179,6 @@ def show_image_list(
         list_axes[i].set_visible(False)
 
     fig.tight_layout()
-    # _ = plt.show()
 
     if save_path is not None:
         fig.savefig(save_path)
@@ -157,47 +186,9 @@ def show_image_list(
     plt.close(fig)
 
 
-def fillhole(input_image):
-    """
-    input gray binary image  get the filled image by floodfill method
-    Note: only holes surrounded in the connected regions will be filled.
-    :param input_image:
-    :return:
-    """
-    im_flood_fill = input_image.copy()
-    h, w = input_image.shape[:2]
-    mask = np.zeros((h + 2, w + 2), np.uint8)
-    im_flood_fill = im_flood_fill.astype("uint8")
-    cv2.floodFill(im_flood_fill, mask, (0, 0), 255)
-    im_flood_fill_inv = cv2.bitwise_not(im_flood_fill)
-    img_out = input_image | im_flood_fill_inv
-    return img_out
-
-
 def fill(img):
     des = cv2.bitwise_not(img.copy())
     contour, hier = cv2.findContours(des, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-    for cnt in contour:
-        cv2.drawContours(des, [cnt], 0, 255, -1)
-    return cv2.bitwise_not(des)
-
-
-def fillCirc(img):
-    des = cv2.bitwise_not(img.copy())
-    contour, hier = cv2.findContours(des, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-    contour_list = []
-    for cnt in contour:
-        approx = cv2.approxPolyDP(cnt, 0.01 * cv2.arcLength(cnt, True), True)
-        area = cv2.contourArea(cnt)
-        # if (len(approx) > 8) & (area > 30):
-        contour_list.append(cnt)
-    cv2.drawContours(des, contour_list, 0, 255, -1)
-    return cv2.bitwise_not(des)
-
-
-def fill2(img):
-    des = cv2.bitwise_not(img.copy())
-    contour, hier = cv2.findContours(des, cv2.RETR_FLOODFILL, cv2.CHAIN_APPROX_SIMPLE)
     for cnt in contour:
         cv2.drawContours(des, [cnt], 0, 255, -1)
     return cv2.bitwise_not(des)

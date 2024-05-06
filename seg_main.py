@@ -2,26 +2,10 @@ import os
 import cv2
 from tqdm import tqdm
 
-# import pretty_errors
-#
-# pretty_errors.configure(
-#     separator_character="*",
-#     filename_display=pretty_errors.FILENAME_EXTENDED,
-#     line_number_first=True,
-#     display_link=True,
-#     lines_before=3,
-#     lines_after=1,
-#     line_color=pretty_errors.RED + "> " + pretty_errors.default_config.line_color,
-#     code_color="  " + pretty_errors.default_config.line_color,
-#     truncate_code=True,
-#     display_locals=True,
-# )
-
-
 from datetime import datetime
 from segmentation.image_segmentation import ImageSegmentation
 from segmentation.utils import (
-    dice_similarity_score,
+    dice_score,
     get_images_and_masks_in_path,
     show_image_list,
 )
@@ -44,15 +28,9 @@ def store_image_data(log_data, time: datetime):
 def process_image(inputs: list[list, bool]) -> None:
     """method to process the image"""
     [image_path, save, time, save_dir] = inputs
-    # print(image_path)
-    # print(save)
-    # print(time)
-    # print(save_dir)
-
     image = ImageSegmentation(image_path, save_dir)
     data = image.preprocessing(image)
     processed_images = {}
-    # log_data = {}
     for key in data.keys():
         if data[key]["show"] is not False:
             processed_images[key] = data[key]["image"]
@@ -80,8 +58,6 @@ def process_image(inputs: list[list, bool]) -> None:
         save_path=save_path,
     )
 
-    # return (save_path, seg_path)
-
 
 def process_all_images(images, save=False):
     time = datetime.now().isoformat("_", timespec="seconds")
@@ -90,7 +66,6 @@ def process_all_images(images, save=False):
 
     with mp.Pool() as pool:
         inputs = [[image, save, time, save_path] for image in images]
-        # print(inputs)
         list(
             tqdm(
                 pool.imap_unordered(process_image, inputs, chunksize=4),
@@ -103,45 +78,10 @@ def process_all_images(images, save=False):
     return save_path, seg_path
 
 
-def dice_score(processed_images, masks, seg_path):
-    eval = []
-    for idx, image in enumerate(processed_images):
-        score = dice_similarity_score(image, masks[idx])
-        if len(eval) == 0 or max(eval) < score:
-            max_score = score
-            max_score_image = image
-        if len(eval) == 0 or min(eval) > score:
-            min_score = score
-            min_score_image = image
-        eval.append(score)
-    avg_score = sum(eval) / len(eval)
-    max_text = f"Max Score: {max_score} - {max_score_image}\n"
-    min_text = f"Min Score: {min_score} - {min_score_image}\n"
-    avg_text = f"Avg Score: {avg_score}\n"
-    print("--- " + seg_path + "\n")
-    print(max_text)
-    print(min_text)
-    print(avg_text)
-    print("---")
-
-    with open(f"{seg_path}/dice_score.txt", "w") as f:
-        f.write("---\n")
-        f.write(max_text)
-        f.write(min_text)
-        f.write(avg_text)
-        f.write("---\n")
-        f.write("Scores:\n")
-        for score in eval:
-            f.write(f"\t{score}\n")
-
-
 def main():
     images, masks = get_images_and_masks_in_path(path)
     processed_image_path, seg_path = process_all_images(images, True)
-    # print(processed_image_path)
-    # segmentation_path = f"{processed_image_path}/segmentation"
     processed_images, _ = get_images_and_masks_in_path(seg_path)
-    # process_image([images[10], False])
     dice_score(processed_images, masks, seg_path)
 
 

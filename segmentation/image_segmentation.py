@@ -169,26 +169,20 @@ class ImageSegmentation:
 
         blank_image = np.zeros(img.shape, dtype=img.dtype)
 
-        # Loop over contours
-        # print("\n\n -- next frame --")
         for c in cnts:
             # Calculate properties
             peri = cv2.arcLength(c, True)
-
             # Douglas-Peucker algorithm
             approx = cv2.approxPolyDP(c, 0.0001 * peri, True)
 
             # applying a convex hull
             if convex_hull == True:
                 c = cv2.convexHull(c)
-            area = cv2.contourArea(c)
 
-            # area = cv2.contourArea(c)
+            # get contour area
+            area = cv2.contourArea(c)
             if area == 0:
                 continue  # Skip to the next iteration if area is zero
-            # Filter for circular shapes
-            radius = math.sqrt(area / math.pi)
-            # circ = int(2 * math.pi * radius)
 
             circularity = 4 * math.pi * area / (peri**2)
 
@@ -197,18 +191,7 @@ class ImageSegmentation:
                 and (area > min_area and area < max_area)
                 and circularity > circ_thresh
             ):
-                # print("\ndetected")
-                # print("approx", len(approx))
-                # print("area", area)
-                # print("peri", peri)
-                # print("circ", circ)
-                # if len(approx) < circ + 10 and len(approx) > circ - 10:
                 cv2.drawContours(blank_image, [c], -1, (255), cv2.FILLED)
-                # cv2.ellipse(blank_image, c, (255), 2)
-        # cv2.imshow("cnts", blank_image)
-        # cv2.waitKey(0)
-
-        # print(blank_image.max())
 
         return blank_image
 
@@ -228,14 +211,6 @@ class ImageSegmentation:
             ),
             "show": True,
         }
-        # image_data["blur"] = {
-        #     "image": image.blur(
-        #         image_data["intensity"]["image"], ksize=(3, 3), iterations=2
-        #     ),
-        #     "operation": "blur",
-        #     "params": image.processing_data[-1],
-        #     "show": True,
-        # }
 
         for blockSize in range(5, 21, 2):
             name = f"adap_gaus_thrsh_bS_{blockSize}_C_{C}"
@@ -339,7 +314,6 @@ class ImageSegmentation:
                 k_e=5,
                 i_e=2,
                 iterations=1,
-                # op=cv2.MORPH_CROSS,
             ),
             "show": False,
         }
@@ -356,8 +330,7 @@ class ImageSegmentation:
 
         contours = image.find_ball_contours(
             cv2.bitwise_not(image_data["dilate_and_erode"]["image"]),
-            # 0.32,
-            0.33
+            0.32,
         )
 
         image_data["contours"] = {
@@ -406,41 +379,6 @@ class ImageSegmentation:
             ),
             "show": True,
         }
-        # image_data["erode_opening_after_segmentation"] = {
-        #     "image": image.erode(
-        #         image_data["opening_after_segmentation"]["image"],
-        #         kernel=(4, 4),
-        #         iterations=5,
-        #     ),
-        #     "show": False,
-        # }
-        #
-        # image_data["closing_after_opening_after_segmentation"] = {
-        #     "image": image.closing(
-        #         image_data["opening_after_segmentation"]["image"],
-        #         kernel=(5, 5),
-        #         iterations=2,
-        #     ),
-        #     "show": True,
-        # }
-
-        # image_data["dilate_after_opening_after_segmentation"] = {
-        # "image": image.dilate(
-        # image_data["opening_after_segmentation"]["image"],
-        # kernel=(3, 3),
-        # iterations=3,
-        # ),
-        # "show": True,
-        # }
-
-        # image_data["erode_dilate_after_segmentation"] = {
-        #     "image": image.erode(
-        #         image_data["dilate_after_segmentation"]["image"],
-        #         kernel=(3, 3),
-        #         iterations=5,
-        #     ),
-        #     "show": True,
-        # }
 
         image_data["segmentation"] = {
             "image": image.find_ball_contours(
