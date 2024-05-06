@@ -5,13 +5,6 @@ import numpy as np
 from segmentation.utils import fill
 import math
 
-# @dataclass(order=True)
-# class ImageData:
-#     image: MatLike
-#     operation: str = ""
-#     params: str = ""
-#     show: bool = True
-
 
 class ImageSegmentation:
     def __init__(self, image_path: str, save_dir: str = None):
@@ -162,7 +155,14 @@ class ImageSegmentation:
             "show": show,
         }
 
-    def find_ball_contours(self, image, circ_thresh, min_area=400, max_area=4900):
+    def find_ball_contours(
+        self,
+        image,
+        circ_thresh,
+        min_area=400,
+        max_area=4900,
+        convex_hull=False,
+    ):
         img = image.copy()
         cnts = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
@@ -177,7 +177,13 @@ class ImageSegmentation:
 
             # Douglas-Peucker algorithm
             approx = cv2.approxPolyDP(c, 0.0001 * peri, True)
+
+            # applying a convex hull
+            if convex_hull == True:
+                c = cv2.convexHull(c)
             area = cv2.contourArea(c)
+
+            # area = cv2.contourArea(c)
             if area == 0:
                 continue  # Skip to the next iteration if area is zero
             # Filter for circular shapes
@@ -245,7 +251,7 @@ class ImageSegmentation:
             image.fill_image(image_data, name)
 
     @staticmethod
-    def preprocessing2(image):
+    def preprocessing(image):
         image_data = {}
 
         image_data["original"] = {
@@ -308,6 +314,14 @@ class ImageSegmentation:
             "show": False,
         }
 
+        image_data["dilate"] = {
+            "image": image.dilate(
+                image=image_data["open"]["image"].copy(),
+                kernel=(3, 3),
+                iterations=2,
+            ),
+            "show": False,
+        }
         image_data["erode"] = {
             "image": image.erode(
                 image=image_data["open"]["image"].copy(),
@@ -342,7 +356,8 @@ class ImageSegmentation:
 
         contours = image.find_ball_contours(
             cv2.bitwise_not(image_data["dilate_and_erode"]["image"]),
-            0.2,
+            # 0.32,
+            0.33
         )
 
         image_data["contours"] = {
@@ -373,11 +388,21 @@ class ImageSegmentation:
             "show": True,
         }
 
+        recontours = image.find_ball_contours(
+            image_data["segmentation_before_recontour"]["image"],
+            0.0,
+            min_area=100,
+            max_area=4900,
+            convex_hull=True,
+        )
+
+        image_data["recontours"] = {"image": recontours, "show": True}
+
         image_data["opening_after_segmentation"] = {
             "image": image.opening(
-                image_data["segmentation_before_recontour"]["image"],
+                image_data["recontours"]["image"],
                 kernel=(3, 3),
-                iterations=6,
+                iterations=5,
             ),
             "show": True,
         }
@@ -399,14 +424,14 @@ class ImageSegmentation:
         #     "show": True,
         # }
 
-        image_data["dilate_after_opening_after_segmentation"] = {
-            "image": image.dilate(
-                image_data["opening_after_segmentation"]["image"],
-                kernel=(3, 3),
-                iterations=3,
-            ),
-            "show": True,
-        }
+        # image_data["dilate_after_opening_after_segmentation"] = {
+        # "image": image.dilate(
+        # image_data["opening_after_segmentation"]["image"],
+        # kernel=(3, 3),
+        # iterations=3,
+        # ),
+        # "show": True,
+        # }
 
         # image_data["erode_dilate_after_segmentation"] = {
         #     "image": image.erode(
@@ -419,10 +444,11 @@ class ImageSegmentation:
 
         image_data["segmentation"] = {
             "image": image.find_ball_contours(
-                image_data["dilate_after_opening_after_segmentation"]["image"],
-                0.36,
-                150,
+                image_data["opening_after_segmentation"]["image"],
+                0.72,
+                250,
                 5000,
+                True,
             ),
             "show": True,
         }

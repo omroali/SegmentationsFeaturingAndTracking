@@ -289,10 +289,26 @@ if __name__ == "__main__":
     correlation_data = get_ch_stats(correlation_avg)
     asm_range_data = get_ch_stats(asm_range)
 
-    asm_titles = ["Red Channel\nASM Avg", "Green Channel\nASM Avg", "Blue Channel\nASM Avg"]
-    contrast_titles = ["Red Channel\nContrast Avg", "Green Channel\nContrast Avg", "Blue Channel\nContrast Avg"]
-    correlation_titles = ["Red Channel\nCorrelation Avg", "Green Channel\nCorrelation Avg", "Blue Channel\nCorrelation Avg"]
-    asm_range_titles = ["Red Channel\nASM Range Avg", "Green Channel\nASM Range  Avg", "Blue Channel\nASM Range Avg"]
+    asm_titles = [
+        "Red Channel\nASM Avg",
+        "Green Channel\nASM Avg",
+        "Blue Channel\nASM Avg",
+    ]
+    contrast_titles = [
+        "Red Channel\nContrast Avg",
+        "Green Channel\nContrast Avg",
+        "Blue Channel\nContrast Avg",
+    ]
+    correlation_titles = [
+        "Red Channel\nCorrelation Avg",
+        "Green Channel\nCorrelation Avg",
+        "Blue Channel\nCorrelation Avg",
+    ]
+    asm_range_titles = [
+        "Red Channel\nASM Range Avg",
+        "Green Channel\nASM Range  Avg",
+        "Blue Channel\nASM Range Avg",
+    ]
 
     plt_colours = ["yellow", "white", "orange"]
     plt.figure()
@@ -301,29 +317,35 @@ if __name__ == "__main__":
         for i, d in enumerate(data):
             plt.subplot(rows, columns, i + offset + 1)
             # box = plt.boxplot(d, vert=True, patch_artist=True, widths=0.2)
-            violins = plt.violinplot(d, showmeans=True, showmedians=False, showextrema=False)
-            for j, pc in enumerate(violins['bodies']):
+            violins = plt.violinplot(
+                d, showmeans=True, showmedians=False, showextrema=False
+            )
+            for j, pc in enumerate(violins["bodies"]):
                 pc.set_facecolor(colours[j])
-                pc.set_edgecolor('black')
+                pc.set_edgecolor("black")
                 pc.set_alpha(1)
             plt.xticks([1, 2, 3], balls, rotation=45)
             plt.title(titles[i])
             # for j, patch in enumerate(box["boxes"]):
             #     patch.set_facecolor(colours[j])
-            plt.grid(axis='y') 
-
+            plt.grid(axis="y")
 
     columns = 3
     rows = 1
     get_boxplot(asm_data, asm_titles, rows=rows, columns=columns, offset=0)
     plt.tight_layout()
-    plt.show()
+    plt.savefig("asm_data")
 
     get_boxplot(contrast_data, contrast_titles, rows=rows, columns=columns, offset=0)
     plt.tight_layout()
-    plt.show()
+    plt.savefig("contrast_data")
 
-    get_boxplot(correlation_data, correlation_titles, rows=rows, columns=columns, offset=0)
-    # get_boxplot(asm_range_data, asm_range_titles, rows=rows, columns=columns, offset=9)
+    get_boxplot(
+        correlation_data, correlation_titles, rows=rows, columns=columns, offset=0
+    )
     plt.tight_layout()
-    plt.show()
+    plt.savefig("correlation_data")
+
+    get_boxplot(asm_range_data, asm_range_titles, rows=rows, columns=columns, offset=0)
+    plt.tight_layout()
+    plt.savefig("asm_range_data")
