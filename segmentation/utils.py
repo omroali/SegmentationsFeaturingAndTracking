@@ -67,7 +67,6 @@ def dice_score(processed_images, masks, save_path):
         f.write(avg_text)
         f.write("---\n")
         f.write("Scores:\n")
-        # top_5 =
         for idx, score in enumerate(eval):
             f.write(f"\t{score}\t{masks[idx]}\n")
         f.write("---\n")
@@ -94,7 +93,7 @@ def dice_similarity_score(seg_path, mask_path, save_path):
     dice_score = 2.0 * intersection.sum() / (seg.sum() + mask.sum())
 
     difference = cv2.bitwise_not(cv2.bitwise_or(cv2.bitwise_not(seg), mask))
-    cv2.imwrite(save_path + f"difference_ds_{dice_score}.jpg", difference)
+    cv2.imwrite(save_path + f"/difference_ds_{dice_score}.jpg", difference)
     return dice_score
 
 
