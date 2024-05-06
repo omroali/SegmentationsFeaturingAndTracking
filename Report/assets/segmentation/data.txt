@@ -1,0 +1,50 @@
+gblur,kernel:(3, 3),iterations:2
+medianblur,kernel:3,iterations:2
+adaptive_threshold,blockSize:19,C:5
+fill_adap_gaus_thrsh
+opening,kernel:[[0 0 1 0 0]
+ [1 1 1 1 1]
+ [1 1 1 1 1]
+ [1 1 1 1 1]
+ [0 0 1 0 0]],iterations:4
+erode,kernel:[[0 1 0]
+ [1 1 1]
+ [0 1 0]],iterations:2
+dilate,kernel:[[0 1 0]
+ [1 1 1]
+ [0 1 0]],iterations:2
+fill_erode
+erode,kernel:[[0 0 1 0]
+ [1 1 1 1]
+ [1 1 1 1]
+ [1 1 1 1]],iterations:1
+erode,kernel:[[0 0 1 0]
+ [1 1 1 1]
+ [1 1 1 1]
+ [1 1 1 1]],iterations:1
+erode,kernel:[[0 0 1 0]
+ [1 1 1 1]
+ [1 1 1 1]
+ [1 1 1 1]],iterations:1
+erode,kernel:[[0 0 1 0]
+ [1 1 1 1]
+ [1 1 1 1]
+ [1 1 1 1]],iterations:1
+erode,kernel:[[0 0 1 0]
+ [1 1 1 1]
+ [1 1 1 1]
+ [1 1 1 1]],iterations:1
+dilate,kernel:[[0 0 1 0 0]
+ [1 1 1 1 1]
+ [1 1 1 1 1]
+ [1 1 1 1 1]
+ [0 0 1 0 0]],iterations:1
+dilate,kernel:[[0 0 1 0 0]
+ [1 1 1 1 1]
+ [1 1 1 1 1]
+ [1 1 1 1 1]
+ [0 0 1 0 0]],iterations:1
+dilate_and_erode,k_d:(4, 4),i_d=5,k_e:(5, 5),i_e=2,iterations:1
+opening,kernel:[[0 1 0]
+ [1 1 1]
+ [0 1 0]],iterations:5

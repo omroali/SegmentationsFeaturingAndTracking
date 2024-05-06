@@ -10,8 +10,14 @@ $ deriv(f(x), x)&= lim_(Delta x arrow 0) (f(x + Delta x) - f(x)) / (Delta x). $
 = Image Segmentation and Detection (40%)
 
 == Part A
-Automated ball objects segmentation. For each image, automatically segment the
-balls asdfasdfasdfa from background.
+Automated ball objects segmentation. For each image, automatically segment the balls asdfasdfasdfa from background.
+
+
+
+#figure(
+    image("./assets/dice_score_barchart.png", width: 100%,
+  ), caption: [TODOTODO],
+)<SEDS>
 
 == Part B
 Segmentation evaluation. For each ball image, calculate the Dice Similarity

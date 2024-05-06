@@ -265,7 +265,7 @@ class ImageSegmentation:
 
         image_data["intensity_threshold"] = {
             "image": intensity_threshold,
-            "show": True,
+            "show": False,
         }
 
         name = "adap_gaus_thrsh"
@@ -335,7 +335,7 @@ class ImageSegmentation:
 
         image_data["contours"] = {
             "image": contours,
-            "show": True,
+            "show": False,
         }
 
         image_data["im_1"] = {
@@ -358,7 +358,7 @@ class ImageSegmentation:
                     image_data["im_1"]["image"], image_data["im_2"]["image"]
                 ),
             ),
-            "show": True,
+            "show": False,
         }
 
         recontours = image.find_ball_contours(
@@ -377,7 +377,7 @@ class ImageSegmentation:
                 kernel=(3, 3),
                 iterations=5,
             ),
-            "show": True,
+            "show": False,
         }
 
         image_data["segmentation"] = {
@@ -388,6 +388,6 @@ class ImageSegmentation:
                 5000,
                 True,
             ),
-            "show": True,
+            "show": False,
         }
         return image_data

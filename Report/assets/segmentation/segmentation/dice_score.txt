@@ -1,0 +1,83 @@
+---
+Max Score: 0.9608055770720372 - process_data/2024-05-06_14:23:27/segmentation/frame-78.png
+Min Score: 0.8195569136745607 - process_data/2024-05-06_14:23:27/segmentation/frame-93.png
+Avg Score: 0.9061831606772003
+---
+Scores:
+	0.9330296127562643	data/ball_frames/frame-54_GT.png
+	0.9349420392713509	data/ball_frames/frame-55_GT.png
+	0.9261556465769456	data/ball_frames/frame-56_GT.png
+	0.941083640189374	data/ball_frames/frame-57_GT.png
+	0.9501381014682366	data/ball_frames/frame-58_GT.png
+	0.9413919413919414	data/ball_frames/frame-59_GT.png
+	0.9280772325020112	data/ball_frames/frame-60_GT.png
+	0.9512928442573662	data/ball_frames/frame-61_GT.png
+	0.9565345513481656	data/ball_frames/frame-62_GT.png
+	0.9369711117595565	data/ball_frames/frame-63_GT.png
+	0.9425253126861227	data/ball_frames/frame-64_GT.png
+	0.9342738057069574	data/ball_frames/frame-65_GT.png
+	0.9439822518025514	data/ball_frames/frame-66_GT.png
+	0.9220552254456483	data/ball_frames/frame-67_GT.png
+	0.9315297261189045	data/ball_frames/frame-68_GT.png
+	0.9537412757669209	data/ball_frames/frame-69_GT.png
+	0.9555305827580671	data/ball_frames/frame-70_GT.png
+	0.9357436318816763	data/ball_frames/frame-71_GT.png
+	0.9342900302114804	data/ball_frames/frame-72_GT.png
+	0.9250626083606242	data/ball_frames/frame-73_GT.png
+	0.9188712522045855	data/ball_frames/frame-74_GT.png
+	0.9269681742043551	data/ball_frames/frame-75_GT.png
+	0.9504702194357367	data/ball_frames/frame-76_GT.png
+	0.9428125	data/ball_frames/frame-77_GT.png
+	0.9608055770720372	data/ball_frames/frame-78_GT.png
+	0.9430280138495436	data/ball_frames/frame-79_GT.png
+	0.937229811516514	data/ball_frames/frame-80_GT.png
+	0.9444117069338047	data/ball_frames/frame-81_GT.png
+	0.917960088691796	data/ball_frames/frame-82_GT.png
+	0.9139255465826276	data/ball_frames/frame-83_GT.png
+	0.9160955732543064	data/ball_frames/frame-84_GT.png
+	0.9293731652564324	data/ball_frames/frame-85_GT.png
+	0.9246686065308761	data/ball_frames/frame-86_GT.png
+	0.8963098505641964	data/ball_frames/frame-87_GT.png
+	0.9004968062455643	data/ball_frames/frame-88_GT.png
+	0.8613041154462854	data/ball_frames/frame-89_GT.png
+	0.8618568232662193	data/ball_frames/frame-90_GT.png
+	0.9029839556155346	data/ball_frames/frame-91_GT.png
+	0.8881948782011243	data/ball_frames/frame-92_GT.png
+	0.8195569136745607	data/ball_frames/frame-93_GT.png
+	0.8287037037037037	data/ball_frames/frame-94_GT.png
+	0.8620253164556962	data/ball_frames/frame-95_GT.png
+	0.8978356288784622	data/ball_frames/frame-96_GT.png
+	0.8938924852237545	data/ball_frames/frame-97_GT.png
+	0.9005638839224316	data/ball_frames/frame-98_GT.png
+	0.9015081967213114	data/ball_frames/frame-99_GT.png
+	0.8641789169493655	data/ball_frames/frame-100_GT.png
+	0.8733590733590734	data/ball_frames/frame-101_GT.png
+	0.8558358384524899	data/ball_frames/frame-102_GT.png
+	0.8532547699214366	data/ball_frames/frame-103_GT.png
+	0.8728194423736395	data/ball_frames/frame-104_GT.png
+	0.8921966621560667	data/ball_frames/frame-105_GT.png
+	0.8731519810762862	data/ball_frames/frame-106_GT.png
+	0.8680514921006437	data/ball_frames/frame-107_GT.png
+	0.8959781867757328	data/ball_frames/frame-108_GT.png
+	0.8998593170482159	data/ball_frames/frame-109_GT.png
+	0.8789373814041745	data/ball_frames/frame-110_GT.png
+	0.8591674047829938	data/ball_frames/frame-111_GT.png
+	0.8861135155187337	data/ball_frames/frame-112_GT.png
+	0.8723880597014926	data/ball_frames/frame-113_GT.png
+	0.8698282119525769	data/ball_frames/frame-114_GT.png
+	0.822869077143976	data/ball_frames/frame-115_GT.png
+	0.8313458262350937	data/ball_frames/frame-116_GT.png
+---
+5 highest:
+process_data/2024-05-06_14:23:27/segmentation/frame-78.png, 0.9608055770720372
+process_data/2024-05-06_14:23:27/segmentation/frame-62.png, 0.9565345513481656
+process_data/2024-05-06_14:23:27/segmentation/frame-70.png, 0.9555305827580671
+process_data/2024-05-06_14:23:27/segmentation/frame-69.png, 0.9537412757669209
+process_data/2024-05-06_14:23:27/segmentation/frame-61.png, 0.9512928442573662
+---
+5 lowest:
+process_data/2024-05-06_14:23:27/segmentation/frame-93.png, 0.8195569136745607
+process_data/2024-05-06_14:23:27/segmentation/frame-115.png, 0.822869077143976
+process_data/2024-05-06_14:23:27/segmentation/frame-94.png, 0.8287037037037037
+process_data/2024-05-06_14:23:27/segmentation/frame-116.png, 0.8313458262350937
+process_data/2024-05-06_14:23:27/segmentation/frame-103.png, 0.8532547699214366

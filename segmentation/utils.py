@@ -78,6 +78,32 @@ def dice_score(processed_images, masks, save_path):
         for v in FiveLowest:
             f.write(f"{v}, {score_dict[v]}\n")
 
+    frame_numbers = [extract_frame_number(key) for key in score_dict.keys()]
+
+    plt.figure(figsize=(12, 3))
+    plt.bar(frame_numbers, score_dict.values(), color="c")
+    plt.title("Dice Score for Each Image Frame")
+    plt.xlabel("Image Frame")
+    plt.ylabel("Dice Similarity Similarity Score")
+    plt.ylim([0.8, 1])
+    plt.xticks(
+        frame_numbers, rotation=90
+    )  # Rotate the x-axis labels for better readability
+    plt.grid(True)
+    plt.tight_layout()  # Adjust the layout for better readability
+    plt.savefig(f"Report/assets/dice_score_barchart.png")
+    # plt.show()
+    # plt.close()
+
+
+def extract_frame_number(path):
+    components = path.split("/")
+    filename = components[-1]
+    parts = filename.split("-")
+    frame_number_part = parts[-1]
+    frame_number = frame_number_part.split(".")[0]
+    return int(frame_number)
+
 
 def dice_similarity_score(seg_path, mask_path, save_path):
     """
