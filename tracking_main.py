@@ -31,7 +31,7 @@ def kalman_tracking(
     nvy=0.36,
     nu=0.25,
     nv=0.25,
-):  
+):
     # Constant Velocity
     F = np.matrix([[1, dt, 0, 0], [0, 1, 0, 0], [0, 0, 1, dt], [0, 0, 0, 1]])
 
@@ -49,6 +49,8 @@ def kalman_tracking(
 
     N = len(z[0])
     s = np.zeros((4, N))
+    # s[0][0] = x01
+    # s[2][0] = x02
 
     for i in range(N):
         xp, Pp = kalman_predict(x, P, F, Q)
@@ -61,9 +63,14 @@ def kalman_tracking(
 
     return px, py
 
+
 def rms(x, y, px, py):
     err = np.array(error(x, y, px, py))
+    print("mean =", err.mean())
+    print("std =", err.std())
+    print("rms =", np.sqrt(err.mean()))
     return np.sqrt(err.mean())
+
 
 def error(x, y, px, py):
     err = []
@@ -164,7 +171,7 @@ def error(x, y, px, py):
 #     # x02 = 448.64207035865655
 #     # x03 = 59.73328857781342
 #     # x04 = 763.0144886665084
-    
+
 #     nx = 40.0
 #     ny = 9e-05
 #     nvx = 4e-05
@@ -201,28 +208,27 @@ if __name__ == "__main__":
     # nu = 0.25
     # nv = 0.25
     # scales = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
-    # tune 2 
-    nx = 160.0 
-    ny = 0.00036 
-    nvx = 0.00016 
-    nvy = 0.00036 
-    nu = 0.00025 
+    # tune 2
+    nx = 160.0
+    ny = 0.00036
+    nvx = 0.00016
+    nvy = 0.00036
+    nu = 0.00025
     nv = 0.00025
     x03 = 0.0
     x04 = 0.0
 
-    scales = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
-    magnitudes = [0.1, 1, 10, 100]
-    scales = [scale * magnitude for scale in scales for magnitude in magnitudes]
-
+    # scales = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
+    # magnitudes = [0.1, 1, 10, 100]
+    # scales = [scale * magnitude for scale in scales for magnitude in magnitudes]
 
     k = 1
-    nx=k*0.16
-    ny=k*0.36
-    nvx=k*0.16
-    nvy=k*0.36
-    nu=0.25
-    nv=0.25
+    nx = k * 0.16
+    ny = k * 0.36
+    nvx = k * 0.16
+    nvy = k * 0.36
+    nu = 0.25
+    nv = 0.25
     x01 = z[0][0]
     x02 = 425
 
@@ -239,13 +245,12 @@ if __name__ == "__main__":
         # x04=x04,
         z=z,
     )
-    error = rms(x, y, px, py)
-    print(error)
+    # error = rms(x, y, px, pypx, py)
+    print("predicction rms:", rms(x, y, px, py))
 
-    # print('baseline rms:', rms(x, y, px, py))
-    # prev_rms = float('inf') 
+    print("noise rms:", rms(x, y, na, nb))
 
-    # lowsest_rms = 100
+    # prev_rms = float('inf')
     # error_data = []
     # from tqdm import tqdm
     # for kxn in tqdm(scales):
@@ -286,8 +291,7 @@ if __name__ == "__main__":
     #                         if current_rms > prev_rms:
     #                             break
     #                         prev_rms = current_rms
-                                
-    
+
     # print(error_data)
 
     # optimize_rms(x, y, z)
@@ -305,10 +309,10 @@ if __name__ == "__main__":
     #     x04=x04,
     #     z=z,
     # )
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(12, 6))
     plt.plot(x, y)
-    plt.scatter(px, py)
-    # plt.scatter(na, nb)
+    plt.plot(px, py)
+    plt.scatter(na, nb)
     plt.title("Kalman Filter")
     plt.savefig("Report/assets/tracking/kalman_filter.png")
     plt.show()
@@ -336,27 +340,27 @@ Best parameters: {'nx': 1642.252858315786, 'ny': 1141.8251255187547, 'nvx': 1.32
 # }, {
 #     'params': {
 #         'nx': 0.16, 'ny': 0.00035999999999999997, 'nvx': 0.00016, 'nvy': 0.00035999999999999997, 'nu': 0.00025, 'nv': 0.00025
-#         }, 
+#         },
 #     'rms': 3.8692383799852865
 # }, {
 #     'params': {
 #         'nx': 1.6, 'ny': 0.00035999999999999997, 'nvx': 0.00016, 'nvy': 0.00035999999999999997, 'nu': 0.00025, 'nv': 0.00025
-#         }, 
+#         },
 #     'rms': 3.2510288733293216
 # },{
 #     'params': {
 #         'nx': 16.0, 'ny': 0.00035999999999999997, 'nvx': 0.00016, 'nvy': 0.00035999999999999997, 'nu': 0.00025, 'nv': 0.00025
-#         }, 
+#         },
 #     'rms': 2.711796606244655
 # },{
 #     'params': {
-        
-        # 'nx': 160.0, 
-        # 'ny': 0.00035999999999999997, 
-        # 'nvx': 0.00016, 
-        # 'nvy': 0.00035999999999999997, 
-        # 'nu': 0.00025, 
-        # 'nv': 0.00025
-#         }, 
+
+# 'nx': 160.0,
+# 'ny': 0.00035999999999999997,
+# 'nvx': 0.00016,
+# 'nvy': 0.00035999999999999997,
+# 'nu': 0.00025,
+# 'nv': 0.00025
+#         },
 #     'rms': 2.6473822509699887
 # }

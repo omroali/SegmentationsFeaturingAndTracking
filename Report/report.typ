@@ -111,7 +111,6 @@ The implementation was found to be quite good, where the DS scores had a maximum
 Overall, the number of steps in order to reach the solution is quite large, at 15 steps. The additional processing was ultimately due to a whack-a-mole situation, where refinements in one area of the task cause another area to worsen. This makes this solution temperamental and not very robust to changes in the input data, however, for very refined results, this is likely to be a similar case for most image segmentation methodologies that do not more complex models such as deep learning.
 
 In the initial processing, it was found that the Intensity value provided a very good initial starting point, as opposed to using grayscale, as the intensity of the balls has a very distinct value compared to the background. The Gaussian Blur and Median Blur were  very effective at removing the nose from this image, whilst maintaining the edges of the balls. The Adaptive Gaussian Threshold (AGT) was effective in detecting the edges in the image, compared to a standard threshold, because it takes into consideration a normalised local area for its thresholding calculation. 
-[[TODO? possibly discuss the C and blocksize values]]
 
 The range of morphological filters was essential in getting a cleaner mask of the balls, with just the right amount of erosion and dilation to remove the noise from the background. Different ranges of kernel sizes were used for the erosion and dilation, however all used some scale of the `MORPH_ELLIPSE` structuring element. It is important to note that in the first applications of the morphological filters, the region being eroded or dilated was the background, not the balls. This was because the image had not yet been inverted and so the balls were considered the background.
 
@@ -119,7 +118,7 @@ Once the morphological filtering was complete, the balls were segmented using th
 
 There are certainly some improvements that could be made, and would have possibly decided to take a different approach had this task been reattempted. A possible alternative first step could be to make use of the colour channels of the image to segment the balls. This could be done by applying a threshold to the colour channels and then combining the results. This would have been a more robust approach where the main challenge would be the distinction of the white football from the walls of the room. Additionally, considering the constrained environment, it could have been possible to create a mask of the problematic parts of the room and have these be removed from the image before segmentation.
 
-= Feature Calculation (30%)
+= Feature Calculation
 
 == Shape Features
 In this section, I will demonstrate how a range of shape features (Solidity, Non-compactness, Circularity, Eccentricity) can be calculated from the contours of the segmented balls.
@@ -237,10 +236,10 @@ To get the GLCM, the balls were segmented in a similar way to what was described
   figure(image("./assets/colour_tennis_mask.png")),
   ))
 
-The GLCM was calculated using the 'greycomatrix' function from the skimage library. The first row and column were both stripped away from the GLCM to remove the background noise. The GLCM was then normalised using the 'greycoprops' and the texture features were evaluated for all four orientations. These were then averaged to get the final average texture value for the ball.
+The GLCM was calculated using the 'greycomatrix' function from the skimage library. The first row and column were both stripped away from the GLCM to remove the background noise. The GLCM was then normalised using 'greycoprops' and the texture features were evaluated for all four orientations. These were then averaged to get the final average texture value for the ball.
 
 === Applied Texture Features
-Below are a violin plot of the texture featuures for the three balls. The Angular Second Moment was calculated for the blue channel, the Contrast for the red channel, and the Correlation for the green channel, where the yellow plot represents the Tennis Ball, the white plot represents the Football, and the orange plot represents the American Football. 
+Below are a set of violin plot of the texture featuures for the three balls. The Angular Second Moment was calculated for the blue channel, the Contrast for the red channel, and the Correlation for the green channel, where the yellow plot represents the Tennis Ball, the white plot represents the Football, and the orange plot represents the American Football. 
 #figure(
   table(
     columns: 5, stroke: none, 
@@ -249,122 +248,94 @@ Below are a violin plot of the texture featuures for the three balls. The Angula
   figure(image("./assets/features/contrast_data_red_channel.png")),
   figure(image("./assets/features/correlation_green_channel.png")),
   ),)
-In the ASM of the Blue Channel, the American Football has the highest distribution of values, followed by the Football and then the Tennis Ball. This makes sense as the American Football's orientation changes throughout the frames, and so when the ball appears more spherical in the image, the Angular Second Moment will be higher as the pixel values are more similar. The Tennis Ball has the lowest distribution and the highest ASM values, this is both due to the Tennis Ball being the smallest ball so the pixel values are more similar, and also due to the Tennis Ball having the least amount of noise in the image as it is very bright and yellow throughout the frames. The range of the ASM values shifts the tennis ball down the scale of the ASM values. [[what is the importance of this]]
+// In the ASM of the Blue Channel, the American Football has the highest distribution of values, followed by the Football and then the Tennis Ball. This makes sense as the American Football's orientation changes throughout the frames, and so when the ball appears more spherical in the image, the Angular Second Moment will be higher as the pixel values are more similar. The Tennis Ball has the lowest distribution and the highest ASM values, this is both due to the Tennis Ball being the smallest ball so the pixel values are more similar, and also due to the Tennis Ball having the least amount of noise in the image as it is very bright and yellow throughout the frames. The range of the ASM values shifts the tennis ball down the scale of the ASM values. [[what is the importance of this]]
 
 // ---
 
-// The Angular Second Moment (ASM), also known as Energy, is a measure of textural uniformity within an image. It is calculated from a Grey-Level Co-occurrence Matrix (GLCM). The ASM will be high when the image has constant or repetitive patterns, meaning the pixel intensities are similar or identical throughout the image. In contrast, the ASM will be low when the image has a lot of variation or randomness in pixel intensities.
+The  *ASM*, is a measure of textural uniformity within an image.  The ASM will be high when the image has constant or repetitive patterns, meaning the pixel intensities are similar or identical throughout the image. The yellow tennis ball has a high ASM mean in the blue channel, which suggests that the pixel intensities in the blue channel for the yellow tennis ball are very similar or identical throughout the image. This could be due to the yellow color having a low blue component in the RGB color model. The orange American football has a low ASM mean in the blue channel, which suggests that there is a lot of variation or randomness in pixel intensities in the blue channel for the orange American football. This could be due to the orange color having a low blue component in the RGB color model, or due to variations in lighting conditions or reflections on the ball. The large standard deviation indicates that the pixel intensities in the blue channel for the orange American football vary widely. This could be due to factors such as lighting conditions, shadows, or variations in the ball's color.
 
-// Yellow Tennis Ball: High ASM mean, small standard deviation (std)
+The *ASM range* in an image indicates the spread of textural uniformity across the image. A high range would indicate that there are areas of the image with very high textural uniformity. The yellow tennis ball has a low ASM range mean in the blue channel. This means that the pixel intensities in the blue channel for the yellow tennis ball are very similar or identical throughout the image.
 
-// The yellow tennis ball has a high ASM mean in the blue channel, which suggests that the pixel intensities in the blue channel for the yellow tennis ball are very similar or identical throughout the image. This could be due to the yellow color having a low blue component in the RGB color model.
-// The small standard deviation indicates that the pixel intensities in the blue channel for the yellow tennis ball are consistent, suggesting that the ball's color and lighting conditions are uniform.
-// White Football: Low mean, low distribution (small standard deviation)
+The *contrast* of an image, specifically in a color channel, refers to the difference in color that makes an object distinguishable. In the red channel of an image, objects with a high amount of red will have a high intensity. The yellow tennis ball and the white football have the highest contrasts means in the red channel because yellow, and white have a combination of red and green in the RGB color model. 
 
-// The white football has a low ASM mean in the blue channel, which suggests that there is a lot of variation or randomness in pixel intensities in the blue channel for the white football. This could be due to the white color having a high blue component in the RGB color model, or due to variations in lighting conditions or reflections on the ball.
-// The low standard deviation indicates that the pixel intensities in the blue channel for the white football are consistent, suggesting that the ball's color and lighting conditions are uniform.
-// Orange American Football: Low mean, high distribution (large standard deviation)
+The *correlation* of an image, specifically in a color channel, refers to the degree to which neighboring pixel values are related. In the green channel of an image, objects with a high amount of green will have a high intensity.
+The orange American football has a high correlation mean in the green channel, which suggests that it has a strong relationship between neighboring pixel values in the green channel. This could be due to the orange color having less green component compared to yellow or due to different lighting conditions. The yellow tennis ball has a low correlation mean in the green channel because yellow is a combination of red and green in the RGB color model. This means that the yellow tennis ball will have a high intensity in the green channel, but the correlation is low.
 
-// The orange American football has a low ASM mean in the blue channel, which suggests that there is a lot of variation or randomness in pixel intensities in the blue channel for the orange American football. This could be due to the orange color having a low blue component in the RGB color model, or due to variations in lighting conditions or reflections on the ball.
-// The large standard deviation indicates that the pixel intensities in the blue channel for the orange American football vary widely. This could be due to factors such as lighting conditions, shadows, or variations in the ball's color.
-// In summary, these distributions reflect the different colors of the balls and how they interact with the blue channel, as well as the consistency of the lighting conditions and color across each ball.
+In terms of using the features to classify the balls, the Shape features can be very useful in especially in classifying the American Football as it has the most distinctive shape of the three balls. In particular, the solidity of the American Football has a very high value, and low distribution, compared to the others, making it a particularly distringuishing feature. The texture features can also be useful in identifying the balls but this is colour dependant. The tennis ball tends to have the lowest correlation and the American Football the highest.
 
-// ---
-
-
-// The range of the Angular Second Moment (ASM) in an image indicates the spread of textural uniformity across the image.
-
-// In other words, it shows the difference between the highest and lowest ASM values in the image. A high range would indicate that there are areas of the image with very high textural uniformity (constant or repetitive patterns) and areas with very low textural uniformity (a lot of variation or randomness in pixel intensities).
-
-// Conversely, a low range would suggest that the textural uniformity across the image is relatively consistent, with less variation in the pixel intensities.
-
-// In the context of the analysis you're doing, the range of the ASM values can provide insights into the variability of the texture across different parts of the balls or across different frames. For example, a high range in the ASM values for the American football might suggest that there are significant changes in its appearance (due to changes in orientation, lighting, etc.) across different frames.
-// The range of the Angular Second Moment (ASM) in an image indicates the spread of textural uniformity across the image. Here's what the distributions of the RANGE ASM on the blue channel of the image for the different balls might indicate:
-
-// Yellow Tennis Ball: Low ASM range mean, small standard deviation (std)
-
-// The yellow tennis ball has a low ASM range mean in the blue channel, which suggests that the spread of textural uniformity across the image is low. This means that the pixel intensities in the blue channel for the yellow tennis ball are very similar or identical throughout the image. This could be due to the yellow color having a low blue component in the RGB color model.
-// The small standard deviation indicates that the spread of textural uniformity across the image for the yellow tennis ball is consistent, suggesting that the ball's color and lighting conditions are uniform.
-// White Football: Low ASM range mean, low distribution (small standard deviation)
-
-// The white football has a low ASM range mean in the blue channel, which suggests that the spread of textural uniformity across the image is low. This could be due to the white color having a high blue component in the RGB color model, or due to variations in lighting conditions or reflections on the ball.
-// The low standard deviation indicates that the spread of textural uniformity across the image for the white football is consistent, suggesting that the ball's color and lighting conditions are uniform.
-// Orange American Football: Low (but higher than other 2) ASM range mean, high distribution (large standard deviation)
-
-// The orange American football has a low (but higher than the other two balls) ASM range mean in the blue channel, which suggests that the spread of textural uniformity across the image is slightly higher than for the other two balls. This could be due to the orange color having a low blue component in the RGB color model, or due to variations in lighting conditions or reflections on the ball.
-// The large standard deviation indicates that the spread of textural uniformity across the image for the orange American football varies widely. This could be due to factors such as lighting conditions, shadows, or variations in the ball's color.
-// In summary, these distributions reflect the different colors of the balls and how they interact with the blue channel, as well as the consistency of the lighting conditions and color across each ball.
-
-// ---
-
-// The contrast of an image, specifically in a color channel, refers to the difference in color that makes an object distinguishable. In the red channel of an image, objects with a high amount of red will have a high intensity.
-
-// Yellow Tennis Ball: High contrast mean, large standard deviation (std)
-
-// The yellow tennis ball has a high contrast mean in the red channel because yellow is a combination of red and green in the RGB color model. This means that the yellow tennis ball will have a high intensity in the red channel, leading to a high contrast mean.
-// The large standard deviation indicates that the pixel intensities in the red channel for the yellow tennis ball vary widely. This could be due to factors such as lighting conditions, shadows, or variations in the ball's color.
-// White Football: Same mean as the yellow tennis ball, less distributed (smaller standard deviation)
-
-// The white football having the same mean contrast as the yellow tennis ball suggests that it also has a high intensity in the red channel. This could be due to the lighting conditions or reflections on the ball.
-// The smaller standard deviation indicates that the pixel intensities in the red channel for the white football are more consistent than those of the yellow tennis ball. This could suggest that the football's color and lighting conditions are more uniform.
-// Orange American Football: Low mean, low distribution (small standard deviation)
-
-// The orange American football has a low contrast mean in the red channel, which suggests that it has a lower intensity in the red channel compared to the yellow tennis ball and white football. This could be due to the orange color having less red component compared to yellow or due to different lighting conditions.
-// The low standard deviation indicates that the pixel intensities in the red channel for the orange American football are consistent, suggesting that the ball's color and lighting conditions are uniform.
-// In summary, these distributions reflect the different colors of the balls and how they interact with the red channel, as well as the consistency of the lighting conditions and color across each ball.
-
-// ---
-
-// The correlation of an image, specifically in a color channel, refers to the degree to which neighboring pixel values are related. In the green channel of an image, objects with a high amount of green will have a high intensity.
-
-// 1. Yellow Tennis Ball: Low correlation mean, large standard deviation (std)
-//    - The yellow tennis ball has a low correlation mean in the green channel because yellow is a combination of red and green in the RGB color model. This means that the yellow tennis ball will have a high intensity in the green channel, but the correlation is low. This could be due to variations in the green intensities across the ball, perhaps due to shadows, lighting conditions, or variations in the ball's color.
-//    - The large standard deviation indicates that the pixel correlations in the green channel for the yellow tennis ball vary widely. This could be due to factors such as lighting conditions, shadows, or variations in the ball's color.
-
-// 2. White Football: Middle mean, less distributed (smaller standard deviation)
-//    - The white football having a middle mean correlation in the green channel suggests that it has a moderate relationship between neighboring pixel values in the green channel. This could be due to the lighting conditions or reflections on the ball.
-//    - The smaller standard deviation indicates that the pixel correlations in the green channel for the white football are more consistent than those of the yellow tennis ball. This could suggest that the football's color and lighting conditions are more uniform.
-
-// 3. Orange American Football: High mean, low distribution (small standard deviation)
-//    - The orange American football has a high correlation mean in the green channel, which suggests that it has a strong relationship between neighboring pixel values in the green channel. This could be due to the orange color having less green component compared to yellow or due to different lighting conditions.
-//    - The low standard deviation indicates that the pixel correlations in the green channel for the orange American football are consistent, suggesting that the ball's color and lighting conditions are uniform.
-
-// In summary, these distributions reflect the different colors of the balls and how they interact with the green channel, as well as the consistency of the lighting conditions and color across each ball.
-
-
-== Part C: Discriminative Information
-The American Football has the most distincive 
-
-Based on your visualisations in Part a) and b), discuss which features appear to
-be best at differentiating between different ball types. For each ball type, are
-shape or texture features more informative? Which ball type is the
-easiest/hardest to distinguish, based on the calculated features? Which other
-features or types of features would you suggest for the task of differentiating
-between the different ball types and why?
-
-#pagebreak()
 = Object Tracking 
-Implement a Kalman filter from scratch (not using any method/class from
-pre-built libraries) that accepts as input the noisy coordinates [na,nb] and
-produces as output the estimated coordinates [x\*,y\*]
 
-SEE Workshop 4 for the Kalman Filter implementation in Matlab
+== Kalman Filter
+A Kalman filter is an algorithm that uses a series of measurements observed over time, containing statistical noise and other inaccuracies, and produces estimates of unknown variables that tend to be more accurate than those based on a single measurement alone. 
 
-Constant Velocity motion model F Constant time intervals Δt = 0.5 Cartesian
-observation model H
+It can be used in the context of object tracking to estimate the position of an object based on noisy measurements of its position. The Kalman filter uses a motion model to predict the next state of the object and an observation model to update the state based on the measurements.
 
-covariance matrices Q and R in task sheet
+The Kalman filter consists of two main steps: the prediction step and the update step. 
 
-== Part 1
-// Plot the estimated trajectory of coordinates [x*,y*], together with the real
-[x,y] and the noisy ones [a,b] for comparison.
+These require a few set of parameters to be set up, such as the state vector x, the state covariance matrix P, the motion model F, the observation model H, the process noise covariance matrix Q, and the measurement noise covariance matrix R.\
+```python
+# nx=0.16, ny=0.36, nvx=0.16, nvy=0.36, nu=0.25, nv=0.25 xO=[0.0,0.0,0.0,0.0]
+F = np.matrix([[1, dt, 0, 0], [0, 1, 0, 0], [0, 0, 1, dt], [0, 0, 0, 1]])
+H = np.matrix([[1, 0, 0, 0], [0, 0, 1, 0]])
+Q = np.matrix([[nx, 0, 0, 0], [0, nvx, 0, 0], [0, 0, ny, 0], [0, 0, 0, nvy]])
+R = np.matrix([[nu, 0], [0, nv]])
+x = np.matrix([xO]).T
+P = Q
+N = len(z[0])
+s = np.zeros((4, N))
+```
 
-Discuss solution
+In the prediction step, the filter uses the motion model to predict the next state of the object based on the previous state.
+```python
+def kalman_predict(x, P, F, Q):
+    xp = F * x
+    Pp = F * P * F.T + Q
+    return xp, P
 
-== Part 2
-Assess the quality of the tracking by calculating the mean and standard
-deviation of the Root Mean Squared error (include the mathematical formulas you
-used for the error calculation in your report)
+def kalman_update(x, P, H, R, z):
+    S = H * P * H.T + R
+    K = P * H.T * np.linalg.inv(S)
+    zp = H * x
+    xe = x + K * (z - zp)
+    Pe = P - K * H * P
+    return xe, Pe
+```
+
+In the update step, the filter uses the observation model to update the state based on the measurements.
+```python
+for i in range(N):
+        xp, Pp = kalman_predict(x, P, F, Q)
+        x, P = kalman_update(xp, Pp, H, R, z[:, i])
+        val = np.array(x[:2, :2]).flatten()
+        s[:, i] = val
+    px = s[0, :]
+    py = s[1, :]
+```
+
+The plotted graph of the initial noisy coordinates [na,nb] and the estimated coordinates [x\*,y\*] can be seen below. 
+
+#figure(image("./assets/tracking/kalman_filter.png", width: 100%,))
+
+In order to evaluate the performance of the Kalman filter, the root mean squared error (RMSE) can be evaluated to  show how close the estimated trajectory is to the ground truth trajectory.
+$ "RMS" = sum_(i=0)^N sqrt((x_i - "px"_i)^2 +  (y_i - "py"_i)^2) $
+
+```python
+mse = []
+for i in range(len(x)):
+    mse.append(np.sqrt((x[i] - px[i]) ** 2 + (y[i] - py[i]) ** 2))
+mean = err.mean()
+rmse = np.sqrt(mean)
+```
+noise: 
+- mean = 6.962803604693961
+- std = 2.5521595512429265
+- rms = 2.638712489964369
+
+prediction:
+- mean = 9.24
+- std =22.05
+- rms = 3.03
+
 
 Compare both noisy and estimated coordinates to the ground truth. Adjust the
 parameters associated with the Kalman filter, justify any choices of

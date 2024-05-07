@@ -231,14 +231,16 @@ def get_histogram(data, Title, lims=(0, 1)):
     data {ball: values}
     """
     for ball, values in data.items():
-        plt.figure(figsize=(3,3))
+        plt.figure(figsize=(3, 2))
         plt.hist(values, bins=20, alpha=0.5, label=ball)
         plt.xlabel(Title)
         plt.xlim(lims)
         plt.ylabel("Frequency")
         plt.legend()
         plt.tight_layout()
-        plt.savefig("Report/assets/features/"+ Title + "_histogram_" + ball.replace("\n", "_"))
+        plt.savefig(
+            "Report/assets/features/" + Title + "_histogram_" + ball.replace("\n", "_")
+        )
     # plt.show()
 
 
@@ -304,12 +306,12 @@ if __name__ == "__main__":
     def get_boxplot(data, title, colours=plt_colours, rows=3, columns=3, offset=0):
         channels = ["Red Channel", "Green Channel", "Blue Channel"]
 
-        fig = plt.figure(figsize=(8,3))  # Get the Figure object
+        fig = plt.figure(figsize=(8, 3))  # Get the Figure object
         fig.suptitle(title)  # Set the overall title
 
         for i, d in enumerate(data):
             ax = plt.subplot(rows, columns, i + offset + 1)
-            ax.set_facecolor(channel_colours[i])  
+            ax.set_facecolor(channel_colours[i])
             ax.patch.set_alpha(0.5)
             violins = plt.violinplot(
                 d, showmeans=True, showmedians=False, showextrema=False
@@ -323,7 +325,7 @@ if __name__ == "__main__":
 
     def get_boxplot_specific(data, title, i, colours=plt_colours):
 
-        plt.figure(figsize=(2.5,6))
+        plt.figure(figsize=(2.5, 6))
         d = data[i]
         violins = plt.violinplot(
             d, showmeans=True, showmedians=False, showextrema=False
@@ -333,11 +335,11 @@ if __name__ == "__main__":
             pc.set_edgecolor("black")
             pc.set_alpha(0.5)
         plt.xticks([1, 2, 3], balls, rotation=45)
-        plt.title(title + '\n' + channels[i])
+        plt.title(title + "\n" + channels[i])
         ax = plt.gca()  # Get the current Axes instance
         ax.set_facecolor(channel_colours[i])  # Set the background color
         ax.patch.set_alpha(0.1)  # Set the alpha value
-        
+
     columns = 3
     rows = 1
     # get_boxplot(asm_data, asm_title, rows=rows, columns=columns, offset=0)
@@ -347,9 +349,9 @@ if __name__ == "__main__":
 
     # get_boxplot(contrast_data, contrast_title, rows=rows, columns=columns, offset=0)
     # plt.tight_layout()
-    # plt.savefig("Report/assets/features/contrast_data")   
+    # plt.savefig("Report/assets/features/contrast_data")
     # plt.close()
-    
+
     # get_boxplot(
     #     correlation_data, correlation_title, rows=rows, columns=columns, offset=0
     # )
@@ -361,7 +363,6 @@ if __name__ == "__main__":
     # plt.tight_layout()
     # plt.savefig("Report/assets/features/asm_range_data")
     # plt.close()
-
 
     get_boxplot_specific(asm_data, asm_title, 2)
     plt.tight_layout()
