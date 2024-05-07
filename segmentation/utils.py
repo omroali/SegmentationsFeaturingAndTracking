@@ -92,8 +92,25 @@ def dice_score(processed_images, masks, save_path):
     plt.grid(True)
     plt.tight_layout()  # Adjust the layout for better readability
     plt.savefig(f"Report/assets/dice_score_barchart.png")
-    # plt.show()
-    # plt.close()
+
+    # standard deviation
+    std_dev = np.std(eval)
+    print(f"Standard Deviation: {std_dev}")
+    mean = np.mean(eval)
+    print(f"Mean: {mean}")
+
+    # plot boxplot
+    plt.figure(figsize=(12, 3))
+    plt.violinplot(eval, vert=False, showmeans=True)
+    plt.title("Dice Score Distribution")
+    plt.xlabel("Dice Similarity Score")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.text(0.83, 0.9, f'Standard Deviation: {std_dev:.2f}', transform=plt.gca().transAxes)
+    plt.text(0.83, 0.80, f'Mean: {mean:.2f}', transform=plt.gca().transAxes)
+
+    plt.savefig(f"Report/assets/dice_score_violin.png")
+
 
 
 def extract_frame_number(path):

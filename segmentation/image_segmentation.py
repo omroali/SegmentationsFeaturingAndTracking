@@ -238,7 +238,7 @@ class ImageSegmentation:
             "show": False,
         }
         image_data["hsv"] = {
-            "image": cv2.cvtColor(image.image, cv2.COLOR_BGR2HSV),
+            "image": cv2.cvtColor(image.image.copy(), cv2.COLOR_BGR2HSV),
             "show": False,
         }
         (_, _, intensity) = cv2.split(image_data["hsv"]["image"])
@@ -275,10 +275,8 @@ class ImageSegmentation:
                 blockSize=19,
                 C=5,
             ),
-            "show": True,
+            "show": False,
         }
-
-        image.fill_image(image_data, name)
 
         image_data["open"] = {
             "image": image.opening(
@@ -303,27 +301,23 @@ class ImageSegmentation:
                 kernel=(3, 3),
                 iterations=2,
             ),
-            "show": False,
+            "show": True,
         }
-        image.fill_image(image_data, "erode")
+        fill_erode = image.fill_image(image_data, "erode")
+
+        # image_data["fill_erode"] = {
+        #     "image": fill_erode,
+        #     "show": False,
+        # }
+
         image_data["dilate_and_erode"] = {
             "image": image.dilate_and_erode(
-                image_data["fill_erode"]["image"].copy(),
+                image_data["fill_erode"]["image"],
                 k_d=4,
                 i_d=5,
                 k_e=5,
                 i_e=2,
                 iterations=1,
-            ),
-            "show": False,
-        }
-
-        image_data["segmentation_with_threshold"] = {
-            "image": cv2.bitwise_not(
-                cv2.bitwise_or(
-                    image_data["intensity_threshold"]["image"],
-                    image_data["dilate_and_erode"]["image"],
-                ),
             ),
             "show": False,
         }
@@ -358,7 +352,7 @@ class ImageSegmentation:
                     image_data["im_1"]["image"], image_data["im_2"]["image"]
                 ),
             ),
-            "show": False,
+            "show": True,
         }
 
         recontours = image.find_ball_contours(
@@ -369,15 +363,18 @@ class ImageSegmentation:
             convex_hull=True,
         )
 
-        image_data["recontours"] = {"image": recontours, "show": True}
+         image_data["convex_hull"] = {
+             "image": recontours, 
+             "show": True,
+        }
 
         image_data["opening_after_segmentation"] = {
             "image": image.opening(
-                image_data["recontours"]["image"],
+                image_data["convex_hull"]["image"],
                 kernel=(3, 3),
                 iterations=5,
             ),
-            "show": False,
+            "show": True,
         }
 
         image_data["segmentation"] = {
@@ -388,6 +385,6 @@ class ImageSegmentation:
                 5000,
                 True,
             ),
-            "show": False,
+            "show": True,
         }
         return image_data

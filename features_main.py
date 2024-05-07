@@ -226,18 +226,20 @@ def feature_stats(features, ball, colours=["blue", "green", "red"]):
     return stats
 
 
-def get_histogram(data, Title):
+def get_histogram(data, Title, lims=(0, 1)):
     """
     data {ball: values}
     """
-    plt.figure()
     for ball, values in data.items():
-        plt.hist(values, bins=10, alpha=0.5, label=ball)
-    plt.title(Title + " Histogram")
-    plt.xlabel(Title)
-    plt.ylabel("Frequency")
-    plt.legend()
-    plt.show()
+        plt.figure(figsize=(3,3))
+        plt.hist(values, bins=20, alpha=0.5, label=ball)
+        plt.xlabel(Title)
+        plt.xlim(lims)
+        plt.ylabel("Frequency")
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig("Report/assets/features/"+ Title + "_histogram_" + ball.replace("\n", "_"))
+    # plt.show()
 
 
 if __name__ == "__main__":
@@ -260,10 +262,10 @@ if __name__ == "__main__":
         ball: features[ball]["shape_features"]["eccentricity"] for ball in balls
     }
 
-    # get_histogram(non_compactness, "Non-Compactness")
-    # get_histogram(solidity, "Soliditiy")
-    # get_histogram(circularity, "Circularity")
-    # get_histogram(eccentricity, "Eccentricity")
+    get_histogram(circularity, "Circularity", (0.6, 1))
+    get_histogram(non_compactness, "Non-Compactness", (0.05, 0.35))
+    get_histogram(solidity, "Soliditiy", (0.94, 0.99))
+    get_histogram(eccentricity, "Eccentricity", (0, 1))
 
     channel_colours = ["red", "green", "blue"]
 
@@ -289,63 +291,94 @@ if __name__ == "__main__":
     correlation_data = get_ch_stats(correlation_avg)
     asm_range_data = get_ch_stats(asm_range)
 
-    asm_titles = [
-        "Red Channel\nASM Avg",
-        "Green Channel\nASM Avg",
-        "Blue Channel\nASM Avg",
-    ]
-    contrast_titles = [
-        "Red Channel\nContrast Avg",
-        "Green Channel\nContrast Avg",
-        "Blue Channel\nContrast Avg",
-    ]
-    correlation_titles = [
-        "Red Channel\nCorrelation Avg",
-        "Green Channel\nCorrelation Avg",
-        "Blue Channel\nCorrelation Avg",
-    ]
-    asm_range_titles = [
-        "Red Channel\nASM Range Avg",
-        "Green Channel\nASM Range  Avg",
-        "Blue Channel\nASM Range Avg",
-    ]
+    asm_title = "ASM Avg"
+    contrast_title = "Contrast Avg"
+    correlation_title = "Correlation Avg"
+    asm_range_title = "ASM Range Avg"
 
     plt_colours = ["yellow", "white", "orange"]
+    channels = ["Red Channel", "Green Channel", "Blue Channel"]
+
     plt.figure()
 
-    def get_boxplot(data, titles, colours=plt_colours, rows=3, columns=3, offset=0):
+    def get_boxplot(data, title, colours=plt_colours, rows=3, columns=3, offset=0):
+        channels = ["Red Channel", "Green Channel", "Blue Channel"]
+
+        fig = plt.figure(figsize=(8,3))  # Get the Figure object
+        fig.suptitle(title)  # Set the overall title
+
         for i, d in enumerate(data):
-            plt.subplot(rows, columns, i + offset + 1)
-            # box = plt.boxplot(d, vert=True, patch_artist=True, widths=0.2)
+            ax = plt.subplot(rows, columns, i + offset + 1)
+            ax.set_facecolor(channel_colours[i])  
+            ax.patch.set_alpha(0.5)
             violins = plt.violinplot(
                 d, showmeans=True, showmedians=False, showextrema=False
             )
             for j, pc in enumerate(violins["bodies"]):
                 pc.set_facecolor(colours[j])
                 pc.set_edgecolor("black")
-                pc.set_alpha(1)
+                pc.set_alpha(0.2)
             plt.xticks([1, 2, 3], balls, rotation=45)
-            plt.title(titles[i])
-            # for j, patch in enumerate(box["boxes"]):
-            #     patch.set_facecolor(colours[j])
-            plt.grid(axis="y")
+            plt.title(channels[i])
 
+    def get_boxplot_specific(data, title, i, colours=plt_colours):
+
+        plt.figure(figsize=(2.5,6))
+        d = data[i]
+        violins = plt.violinplot(
+            d, showmeans=True, showmedians=False, showextrema=False
+        )
+        for j, pc in enumerate(violins["bodies"]):
+            pc.set_facecolor(colours[j])
+            pc.set_edgecolor("black")
+            pc.set_alpha(0.5)
+        plt.xticks([1, 2, 3], balls, rotation=45)
+        plt.title(title + '\n' + channels[i])
+        ax = plt.gca()  # Get the current Axes instance
+        ax.set_facecolor(channel_colours[i])  # Set the background color
+        ax.patch.set_alpha(0.1)  # Set the alpha value
+        
     columns = 3
     rows = 1
-    get_boxplot(asm_data, asm_titles, rows=rows, columns=columns, offset=0)
-    plt.tight_layout()
-    plt.savefig("asm_data")
+    # get_boxplot(asm_data, asm_title, rows=rows, columns=columns, offset=0)
+    # plt.tight_layout()
+    # plt.savefig("Report/assets/features/asm_data")
+    # plt.close()
 
-    get_boxplot(contrast_data, contrast_titles, rows=rows, columns=columns, offset=0)
-    plt.tight_layout()
-    plt.savefig("contrast_data")
+    # get_boxplot(contrast_data, contrast_title, rows=rows, columns=columns, offset=0)
+    # plt.tight_layout()
+    # plt.savefig("Report/assets/features/contrast_data")   
+    # plt.close()
+    
+    # get_boxplot(
+    #     correlation_data, correlation_title, rows=rows, columns=columns, offset=0
+    # )
+    # plt.tight_layout()
+    # plt.savefig("Report/assets/features/correlation_data")
+    # plt.close()
 
-    get_boxplot(
-        correlation_data, correlation_titles, rows=rows, columns=columns, offset=0
-    )
-    plt.tight_layout()
-    plt.savefig("correlation_data")
+    # get_boxplot(asm_range_data, asm_range_title, rows=rows, columns=columns, offset=0)
+    # plt.tight_layout()
+    # plt.savefig("Report/assets/features/asm_range_data")
+    # plt.close()
 
-    get_boxplot(asm_range_data, asm_range_titles, rows=rows, columns=columns, offset=0)
+
+    get_boxplot_specific(asm_data, asm_title, 2)
     plt.tight_layout()
-    plt.savefig("asm_range_data")
+    plt.savefig("Report/assets/features/asm_data_blue_channel")
+    plt.close()
+
+    get_boxplot_specific(asm_range_data, asm_range_title, 2)
+    plt.tight_layout()
+    plt.savefig("Report/assets/features/asm_range_data_blue_channel")
+    plt.close()
+
+    get_boxplot_specific(contrast_data, contrast_title, 0)
+    plt.tight_layout()
+    plt.savefig("Report/assets/features/contrast_data_red_channel")
+    plt.close()
+
+    get_boxplot_specific(correlation_data, correlation_title, 1)
+    plt.tight_layout()
+    plt.savefig("Report/assets/features/correlation_green_channel")
+    plt.close()
