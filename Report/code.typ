@@ -5,7 +5,6 @@
 )
 
 == image_segmentation.py
-
 ```python
 import os
 import cv2
@@ -54,6 +53,8 @@ class ImageSegmentation:
             adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
             thresholdType=cv2.THRESH_BINARY,
             blockSize=blockSize,
+```
+```python
             C=C,
         )
         self.log_image_processing(
@@ -61,8 +62,6 @@ class ImageSegmentation:
             f"adaptive_threshold,blockSize:{blockSize},C:{C}",
         )
         return adaptive_gaussian_threshold
-```
-```python
     def dilate(self, image, kernel=(3, 3), iterations=1, op=cv2.MORPH_ELLIPSE):
         """apply dilation to the image"""
         image = image.copy()
@@ -270,8 +269,6 @@ class ImageSegmentation:
             ),
             "show": False,
         }
-```
-```python
         image_data["dilate"] = {
             "image": image.dilate(
                 image=image_data["open"]["image"].copy(),
@@ -279,6 +276,8 @@ class ImageSegmentation:
                 iterations=2,
             ),
             "show": False,
+```
+```python
         }
         image_data["erode"] = {
             "image": image.erode(
@@ -325,8 +324,6 @@ class ImageSegmentation:
             ),
             "show": False,
         }
-```
-```python
         image_data["segmentation_before_recontour"] = {
             "image": cv2.bitwise_not(
                 cv2.bitwise_or(
@@ -337,6 +334,8 @@ class ImageSegmentation:
         }
 
         recontours = image.find_ball_contours(
+```
+```python
             image_data["segmentation_before_recontour"]["image"],
             0.0,
             min_area=100,
@@ -370,8 +369,8 @@ class ImageSegmentation:
         }
         return image_data
 ```
-
-==== utils.py
+#pagebreak()
+== utils.py
 ```python
 import os
 import glob
@@ -427,10 +426,10 @@ def dice_score(processed_images, masks, save_path):
     max_text = f"Max Score: {max_score} - {max_score_image}\n"
     min_text = f"Min Score: {min_score} - {min_score_image}\n"
     avg_text = f"Avg Score: {avg_score}\n"
-    print("--- " + save_path + "\n")
-    print(max_text)
     ```
 ```python
+    print("--- " + save_path + "\n")
+    print(max_text)
     print(min_text)
     print(avg_text)
     print("---")
@@ -484,9 +483,9 @@ def dice_score(processed_images, masks, save_path):
     plt.grid(True)
     plt.tight_layout()
     plt.text(0.83, 0.9, f'Standard Deviation: {std_dev:.2f}', transform=plt.gca().transAxes)
-    plt.text(0.83, 0.80, f'Mean: {mean:.2f}', transform=plt.gca().transAxes)
 ```
 ```python
+    plt.text(0.83, 0.80, f'Mean: {mean:.2f}', transform=plt.gca().transAxes)
     plt.savefig(f"Report/assets/dice_score_violin.png")
 
 def extract_frame_number(path):
@@ -587,11 +586,8 @@ def fill(img):
         cv2.drawContours(des, [cnt], 0, 255, -1)
     return cv2.bitwise_not(des)
 ```
-
-
-
+#pagebreak()
 == seg_main.py
-
 ```python 
 import os
 import cv2
@@ -684,8 +680,8 @@ if __name__ == "__main__":
     main()
 
 ```
-seg_main.py
-
+#pagebreak()
+== seg_main.py
 ```python
 import os
 import re
@@ -741,10 +737,9 @@ def texture_features_eval(patch):
     angles = np.radians([0, 45, 90, 135])
     levels = 256
     symmetric = True
-    normed = True
 ```
-
 ```python
+    normed = True
     glcm = graycomatrix(
         patch, distances, angles, levels, symmetric=symmetric, normed=normed
     )
@@ -796,12 +791,12 @@ def initialise_channels_features():
         "red": initialise_channel_texture_features(),
     }
 
-```
-```python
 def initialise_shape_features():
     return {
         "non_compactness": [],
         "solidity": [],
+```
+```python
         "circularity": [],
         "eccentricity": [],
     }
@@ -850,12 +845,12 @@ def get_all_features_balls(path):
             (topy, topx) = (np.min(y), np.min(x))
             (bottomy, bottomx) = (np.max(y), np.max(x))
             padding = 3
-```
-```python
             out = out[
                 topy - padding : bottomy + padding, topx - padding : bottomx + padding
             ]
             out_colour = out_colour[
+```
+```python
                 topy - padding : bottomy + padding, topx - padding : bottomx + padding
             ]
 
@@ -901,8 +896,6 @@ def feature_stats(features, ball, colours=["blue", "green", "red"]):
             feature: get_stats(features[ball]["shape_features"][feature])
             for feature in feature_find
         }
-```
-```python
     def get_ball_texture_stats(features, ball, colour):
         feature_find = ["asm_avg", "contrast_avg", "correlation_avg"]
         return {
@@ -910,6 +903,8 @@ def feature_stats(features, ball, colours=["blue", "green", "red"]):
             for texture in feature_find
         }
 
+```
+```python
     stats = {
         ball: {
             "shape_features": get_ball_shape_stats(features, ball),
@@ -953,8 +948,6 @@ if __name__ == "__main__":
     circularity = {
         ball: features[ball]["shape_features"]["circularity"] for ball in balls
     }
-    ```
-```python
     eccentricity = {
         ball: features[ball]["shape_features"]["eccentricity"] for ball in balls
     }
@@ -962,6 +955,8 @@ if __name__ == "__main__":
     get_histogram(non_compactness, "Non-Compactness")
     get_histogram(solidity, "Soliditiy")
     get_histogram(circularity, "Circularity")
+    ```
+```python
     get_histogram(eccentricity, "Eccentricity")
 
     channel_colours = ["red", "green", "blue"]
@@ -1003,8 +998,6 @@ if __name__ == "__main__":
 
         fig = plt.figure(figsize=(8,3))  # Get the Figure object
         fig.suptitle(title)  # Set the overall title
-```
-```python
         for i, d in enumerate(data):
             ax = plt.subplot(rows, columns, i + offset + 1)
             ax.set_facecolor(channel_colours[i])  
@@ -1018,6 +1011,8 @@ if __name__ == "__main__":
                 pc.set_alpha(0.2)
             plt.xticks([1, 2, 3], balls, rotation=45)
             plt.title(channels[i])
+```
+```python
 
     def get_boxplot_specific(data, title, i, colours=plt_colours):
 
@@ -1059,7 +1054,8 @@ if __name__ == "__main__":
     plt.savefig("Report/assets/features/correlation_green_channel")
     plt.close()
 ```
-= Tracking
+#pagebreak()
+= tracking_main.py
 ```python 
 from matplotlib import pyplot as plt
 import numpy as np
@@ -1088,12 +1084,14 @@ def kalman_tracking(
     x03=0.0,
     x04=0.0,
     dt=0.5,
-    nx=16,
+    nx=0.16,
     ny=0.36,
     nvx=0.16,
     nvy=0.36,
     nu=0.25,
     nv=0.25,
+    kq=1,
+    kr=1,
 ):
     # Constant Velocity
     F = np.matrix([[1, dt, 0, 0], [0, 1, 0, 0], [0, 0, 1, dt], [0, 0, 0, 1]])
@@ -1102,16 +1100,16 @@ def kalman_tracking(
     H = np.matrix([[1, 0, 0, 0], [0, 0, 1, 0]])
 
     # Motion Noise Model
-    Q = np.matrix([[nx, 0, 0, 0], [0, nvx, 0, 0], [0, 0, ny, 0], [0, 0, 0, nvy]])
-
+    Q = kq*np.matrix([[nx, 0, 0, 0], [0, nvx, 0, 0], [0, 0, ny, 0], [0, 0, 0, nvy]])
     # Measurement Noise Model
-    R = np.matrix([[nu, 0], [0, nv]])
+    R = kr*np.matrix([[nu, 0], [0, nv]])
 
     x = np.matrix([x01, x02, x03, x04]).T
     P = Q
 
     N = len(z[0])
     s = np.zeros((4, N))
+
 ```
 ```python
     for i in range(N):
@@ -1126,82 +1124,11 @@ def kalman_tracking(
     return px, py
 
 
-def error(x, y, px, py):
-    err = []
-    for i in range(len(x)):
-        err.append(np.sqrt((x[i] - px[i]) ** 2 + (y[i] - py[i]) ** 2))
-    return err
-
-
-def optimisation(trial, x, y, z, dt, nx, ny, nvx, nvy, nu, nv, x01, x02, x03, x04):
-    # dt = trial.suggest_float("dt", 0.05, 1.0, step=0.05)
-
-    # Q
-    nx = trial.suggest_float("nx", -2.0, 2.0)
-    ny = trial.suggest_float("ny", -2.0, 2.0)
-    nvx = trial.suggest_float("nvx", -2.0, 2.0)
-    nvy = trial.suggest_float("nvy", -2.0, 2.0)
-
-    # R
-    nu = trial.suggest_float("nu", -1.0, 1.0)
-    nv = trial.suggest_float("nv", -1.0, 1.0)
-
-    # init x
-    x01 = z[0][0]
-    x02 = z[1][0]
-
-    px, py = kalman_tracking(z, x01, x02, x03, x04, dt, nx, ny, nvx, nvy, nu, nv)
-    rms_val = rms(x, y, px, py)
-    return rms_val
-
-
 def rms(x, y, px, py):
-    err = np.array(error(x, y, px, py))
-    return np.sqrt(err.mean())
+    return np.sqrt(1/len(px)  * (np.sum((x - px)**2 + (y - py)**2)))
 
-
-def optimize_rms(x, y, z):
-    import optuna
-    from tqdm import tqdm
-
-    trials = 100000
-
-    pbar = tqdm(total=trials, desc="Optimization Progress")
-```
-```python
-    def print_new_optimal(study, trial):
-        # Check if the trial is better than the current best
-        pbar.update(1)
-        if trial.value == study.best_value:
-            print(f"New Best RMS: {trial.value} (trial number {trial.number})")
-            print("Best parameters:", study.best_params)
-
-    optuna.logging.set_verbosity(optuna.logging.WARNING)
-
-    study = optuna.create_study()
-    dt = 0.5
-    nx = 0.16
-    ny = 0.36
-    nvx = 0.16
-    nvy = 0.36
-    nu = 0.25
-    nv = 0.25
-    x01 = 0.0
-    x02 = 0.0
-    x03 = 0.0
-    x04 = 0.0
-
-    study.optimize(
-        lambda trial: optimisation(
-            trial, x, y, z, dt, nx, ny, nvx, nvy, nu, nv, x01, x02, x03, x04
-        ),
-        n_trials=trials,
-        n_jobs=8,
-        callbacks=[print_new_optimal],  # Add the callback here
-    )
-
-    return study.best_params
-
+def mean(x, y, px, py):
+    return np.mean(np.sqrt((x - px)**2 + (y - py)**2))
 
 if __name__ == "__main__":
 
@@ -1212,38 +1139,49 @@ if __name__ == "__main__":
     z = np.stack((na, nb))
 
     dt = 0.5
-    nx = 0.16
-    ny = 0.36
-    nvx = 0.16
-    nvy = 0.36
-    nu = 0.25
-    nv = 0.25
-    x01 = 0.0
-    x02 = 0.0
-    x03 = 0.0
-    x04 = 0.0
-```
-```python
-    #optimize_rms(x, y, z)
+    nx = 160.0
+    ny = 0.00036
+    nvx = 0.00016
+    nvy = 0.00036
+    nu = 0.00025
+    nv = 0.00025
 
-    px, py = kalman_tracking(
+    px1, py1 = kalman_tracking(z=z)
+    
+    nx = 0.16 * 10
+    ny = 0.36
+    nvx = 0.16 * 0.0175
+    nvy = 0.36 * 0.0175
+    nu = 0.25 
+    nv = 0.25 * 0.001
+    kq = 0.0175 
+    kr = 0.0015
+    px2, py2 = kalman_tracking(
         nx=nx,
         ny=ny,
         nvx=nvx,
         nvy=nvy,
         nu=nu,
         nv=nv,
-        x01=x01,
-        x02=x02,
-        x03=x03,
-        x04=x04,
+        kq=kq,
+        kr=kr, 
         z=z,
     )
-    plt.figure(figsize=(12, 8))
-    plt.plot(x, y)
-    plt.plot(px, py)
-    plt.scatter(na, nb)
+
+    ```
+```python
+    plt.figure(figsize=(12, 5))
+
+    plt.plot(x, y, label='trajectory')
+    plt.plot(px1, py1, label=f'intial prediction, rms={round(rms(x, y, px1, py1), 3)}')
+    print(f'initial rms={round(rms(x, y, px1, py1), 3)}, mean={round(mean(x, y, px1, py1), 3)}')
+    plt.plot(px2, py2,label=f'optimised prediction, rms={round(rms(x, y, px2, py2), 3)}')
+    print(f'optimised rms={round(rms(x, y, px2, py2), 3)}, mean={round(mean(x, y, px2, py2), 3)}')
+    plt.scatter(na, nb,marker='x',c='k',label=f'noisy data, rms={round(rms(x, y, na, nb), 3)}')
+    print(f'noise rms={round(rms(x, y, na, nb), 3)}, mean={round(mean(x, y, na, nb), 3)}')
+    plt.legend()
+
     plt.title("Kalman Filter")
     plt.savefig("Report/assets/tracking/kalman_filter.png")
-    plt.show()
+    # plt.show()
 ```
