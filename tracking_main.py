@@ -41,10 +41,10 @@ def kalman_tracking(
     H = np.matrix([[1, 0, 0, 0], [0, 0, 1, 0]])
 
     # Motion Noise Model
-    Q = kq*np.matrix([[nx, 0, 0, 0], [0, nvx, 0, 0], [0, 0, ny, 0], [0, 0, 0, nvy]])
+    Q = kq * np.matrix([[nx, 0, 0, 0], [0, nvx, 0, 0], [0, 0, ny, 0], [0, 0, 0, nvy]])
 
     # Measurement Noise Model
-    R = kr*np.matrix([[nu, 0], [0, nv]])
+    R = kr * np.matrix([[nu, 0], [0, nv]])
 
     x = np.matrix([x01, x02, x03, x04]).T
     P = Q
@@ -65,10 +65,12 @@ def kalman_tracking(
 
 
 def rms(x, y, px, py):
-    return np.sqrt(1/len(px)  * (np.sum((x - px)**2 + (y - py)**2)))
+    return np.sqrt(1 / len(px) * (np.sum((x - px) ** 2 + (y - py) ** 2)))
+
 
 def mean(x, y, px, py):
-    return np.mean(np.sqrt((x - px)**2 + (y - py)**2))
+    return np.mean(np.sqrt((x - px) ** 2 + (y - py) ** 2))
+
 
 if __name__ == "__main__":
 
@@ -87,18 +89,18 @@ if __name__ == "__main__":
     nv = 0.00025
 
     px1, py1 = kalman_tracking(
-            z=z,
+        z=z,
     )
-    
+
     nx = 0.16 * 10
     ny = 0.36
     nvx = 0.16 * 0.0175
     nvy = 0.36 * 0.0175
-    nu = 0.25 
+    nu = 0.25
     nv = 0.25 * 0.001
-    kq = 0.0175 
+    kq = 0.0175
     kr = 0.0015
-    
+
     px2, py2 = kalman_tracking(
         nx=nx,
         ny=ny,
@@ -107,25 +109,38 @@ if __name__ == "__main__":
         nu=nu,
         nv=nv,
         kq=kq,
-        kr=kr, 
+        kr=kr,
         z=z,
     )
 
     plt.figure(figsize=(12, 5))
 
-    plt.plot(x, y, label='trajectory')
-    plt.plot(px1, py1, label=f'intial prediction, rms={round(rms(x, y, px1, py1), 3)}')
-    print(f'initial rms={round(rms(x, y, px1, py1), 3)}, mean={round(mean(x, y, px1, py1), 3)}')
-    plt.plot(px2, py2,label=f'optimised prediction, rms={round(rms(x, y, px2, py2), 3)}')
-    print(f'optimised rms={round(rms(x, y, px2, py2), 3)}, mean={round(mean(x, y, px2, py2), 3)}')
-    plt.scatter(na, nb,marker='x',c='k',label=f'noisy data, rms={round(rms(x, y, na, nb), 3)}')
-    print(f'noise rms={round(rms(x, y, na, nb), 3)}, mean={round(mean(x, y, na, nb), 3)}')
+    plt.plot(x, y, label="trajectory")
+    plt.plot(px1, py1, label=f"intial prediction, rms={round(rms(x, y, px1, py1), 3)}")
+    print(
+        f"initial rms={round(rms(x, y, px1, py1), 3)}, mean={round(mean(x, y, px1, py1), 3)}"
+    )
+    plt.plot(
+        px2, py2, label=f"optimised prediction, rms={round(rms(x, y, px2, py2), 3)}"
+    )
+    print(
+        f"optimised rms={round(rms(x, y, px2, py2), 3)}, mean={round(mean(x, y, px2, py2), 3)}"
+    )
+    plt.scatter(
+        na,
+        nb,
+        marker="x",
+        c="k",
+        # label=f"noisy data, rms={round(rms(x, y, na, nb), 3)}",
+    )
+    print(
+        f"noise rms={round(rms(x, y, na, nb), 3)}, mean={round(mean(x, y, na, nb), 3)}"
+    )
     plt.legend()
 
     plt.title("Kalman Filter")
     plt.savefig("Report/assets/tracking/kalman_filter.png")
     # plt.show()
-
 
 
 # 'params': {'kq': 0.01, 'kr': 0.001 + defaults}, 'rms': 2.5705388843484185}

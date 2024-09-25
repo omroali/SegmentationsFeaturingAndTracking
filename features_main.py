@@ -150,7 +150,10 @@ def get_all_features_balls(path):
             rgb_fill = cv2.bitwise_and(cv2.cvtColor(fill_img, cv2.COLOR_GRAY2BGR), img)
 
             out = fill_img.copy()
+            cv2.imshow("out", out)
             out_colour = rgb_fill.copy()
+            cv2.imshow("out_colour", out_colour)
+            cv2.waitKey(0)
 
             # Now crop image to ball size
             (y, x) = np.where(fill_img == 255)
